@@ -39,7 +39,7 @@ const ClientList: React.FC = () => {
         pageSize,
         keyword: keyword || undefined,
       });
-      setClients(result.list);
+      setClients(result.records || []);
       setTotal(result.total);
     } catch (error) {
       message.error("加载客户列表失败");
@@ -180,99 +180,118 @@ const ClientList: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 24 }}>客户管理</h1>
-
-      {/* 搜索区域 */}
-      <Space style={{ marginBottom: 16 }} size="middle">
-        <Search
-          placeholder="搜索客户名称、联系人"
-          onSearch={handleSearch}
-          style={{ width: 300 }}
-          enterButton={<SearchOutlined />}
-        />
-        <Button onClick={handleReset}>重置</Button>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          新增客户
-        </Button>
-      </Space>
-
-      {/* 表格 */}
-      <Table
-        columns={columns}
-        dataSource={clients}
-        rowKey="id"
-        loading={loading}
-        scroll={{ x: 1000 }}
-        pagination={{
-          current: pageNum,
-          pageSize: pageSize,
-          total: total,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => `共 ${total} 条`,
-          onChange: (page, size) => {
-            setPageNum(page);
-            setPageSize(size);
-          },
+    <div style={{ padding: 24, background: "#f5f5f5", minHeight: "100vh" }}>
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 8,
+          padding: 24,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          transition: "all 0.3s ease",
         }}
-      />
-
-      {/* 新增/编辑弹窗 */}
-      <Modal
-        title={editingClient ? "编辑客户" : "新增客户"}
-        open={modalVisible}
-        onOk={handleSave}
-        onCancel={() => setModalVisible(false)}
-        width={700}
-        okText="保存"
-        cancelText="取消"
       >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="客户名称"
-            name="clientName"
-            rules={[{ required: true, message: "请输入客户名称" }]}
-          >
-            <Input placeholder="请输入客户名称" />
-          </Form.Item>
+        <h1
+          style={{
+            marginBottom: 24,
+            fontSize: 24,
+            fontWeight: 500,
+            color: "#52c41a",
+          }}
+        >
+          客户管理
+        </h1>
 
-          <Form.Item
-            label="联系人"
-            name="contactPerson"
-            rules={[{ required: true, message: "请输入联系人" }]}
-          >
-            <Input placeholder="请输入联系人" />
-          </Form.Item>
+        {/* 搜索区域 */}
+        <Space style={{ marginBottom: 16 }} size="middle">
+          <Search
+            placeholder="搜索客户名称、联系人"
+            onSearch={handleSearch}
+            style={{ width: 300 }}
+            enterButton={<SearchOutlined />}
+          />
+          <Button onClick={handleReset}>重置</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+            新增客户
+          </Button>
+        </Space>
 
-          <Form.Item
-            label="联系电话"
-            name="contactPhone"
-            rules={[
-              { required: true, message: "请输入联系电话" },
-              { pattern: /^1[3-9]\d{9}$/, message: "请输入有效的手机号码" },
-            ]}
-          >
-            <Input placeholder="请输入联系电话" />
-          </Form.Item>
+        {/* 表格 */}
+        <Table
+          columns={columns}
+          dataSource={clients}
+          rowKey="id"
+          loading={loading}
+          scroll={{ x: 1000 }}
+          pagination={{
+            current: pageNum,
+            pageSize: pageSize,
+            total: total,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条`,
+            onChange: (page, size) => {
+              setPageNum(page);
+              setPageSize(size);
+            },
+          }}
+        />
 
-          <Form.Item
-            label="联系邮箱"
-            name="contactEmail"
-            rules={[{ type: "email", message: "请输入有效的邮箱地址" }]}
-          >
-            <Input placeholder="请输入联系邮箱" />
-          </Form.Item>
+        {/* 新增/编辑弹窗 */}
+        <Modal
+          title={editingClient ? "编辑客户" : "新增客户"}
+          open={modalVisible}
+          onOk={handleSave}
+          onCancel={() => setModalVisible(false)}
+          width={700}
+          okText="保存"
+          cancelText="取消"
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              label="客户名称"
+              name="clientName"
+              rules={[{ required: true, message: "请输入客户名称" }]}
+            >
+              <Input placeholder="请输入客户名称" />
+            </Form.Item>
 
-          <Form.Item label="地址" name="address">
-            <Input placeholder="请输入地址" />
-          </Form.Item>
+            <Form.Item
+              label="联系人"
+              name="contactPerson"
+              rules={[{ required: true, message: "请输入联系人" }]}
+            >
+              <Input placeholder="请输入联系人" />
+            </Form.Item>
 
-          <Form.Item label="备注" name="remark">
-            <Input.TextArea rows={3} placeholder="请输入备注" />
-          </Form.Item>
-        </Form>
-      </Modal>
+            <Form.Item
+              label="联系电话"
+              name="contactPhone"
+              rules={[
+                { required: true, message: "请输入联系电话" },
+                { pattern: /^1[3-9]\d{9}$/, message: "请输入有效的手机号码" },
+              ]}
+            >
+              <Input placeholder="请输入联系电话" />
+            </Form.Item>
+
+            <Form.Item
+              label="联系邮箱"
+              name="contactEmail"
+              rules={[{ type: "email", message: "请输入有效的邮箱地址" }]}
+            >
+              <Input placeholder="请输入联系邮箱" />
+            </Form.Item>
+
+            <Form.Item label="地址" name="address">
+              <Input placeholder="请输入地址" />
+            </Form.Item>
+
+            <Form.Item label="备注" name="remark">
+              <Input.TextArea rows={3} placeholder="请输入备注" />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
     </div>
   );
 };

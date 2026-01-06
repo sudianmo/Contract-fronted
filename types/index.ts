@@ -7,7 +7,6 @@ export interface Contract {
   clientName?: string;
   amount: number;
   signDate: string;
-  startDate: string;
   endDate: string;
   status: string;
   remark?: string;
@@ -36,11 +35,11 @@ export interface PageParams {
 
 // 分页响应
 export interface PageResult<T> {
-  list: T[];
+  records: T[];
   total: number;
-  pageNum: number;
-  pageSize: number;
-  pages: number;
+  pageNum?: number;
+  pageSize?: number;
+  pages?: number;
 }
 
 // 合同查询参数
