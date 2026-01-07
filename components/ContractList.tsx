@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Table,
   Button,
@@ -59,7 +59,7 @@ const ContractList: React.FC = () => {
   };
 
   // 加载合同列表
-  const loadContracts = async () => {
+  const loadContracts = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getContractList({
@@ -77,25 +77,25 @@ const ContractList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageNum, pageSize, keyword, status, clientId]);
 
   // 加载客户列表（用于下拉选择）
-  const loadClients = async () => {
+  const loadClients = useCallback(async () => {
     try {
       const result = await getClientList({ pageNum: 1, pageSize: 1000 });
       setClients(result.records || []);
     } catch (error) {
       console.error("加载客户列表失败", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadContracts();
-  }, [pageNum, pageSize, keyword, status, clientId]);
+  }, [loadContracts]);
 
   useEffect(() => {
     loadClients();
-  }, []);
+  }, [loadClients]);
 
   // 表格列定义
   const columns: ColumnsType<Contract> = [
@@ -141,35 +141,35 @@ const ContractList: React.FC = () => {
       dataIndex: "status",
       key: "status",
       width: 100,
-      render: (status: string) => (
-        <span
-          style={{
-            padding: "4px 12px",
-            borderRadius: 12,
-            fontSize: 12,
-            fontWeight: 500,
-            background:
-              status === "Executing"
-                ? "#e6f7ff"
-                : status === "Signed"
-                ? "#f6ffed"
-                : status === "Completed"
-                ? "#f0f0f0"
-                : "#fff1f0",
-            color:
-              status === "Executing"
-                ? "#1890ff"
-                : status === "Signed"
-                ? "#52c41a"
-                : status === "Completed"
-                ? "#8c8c8c"
-                : "#ff4d4f",
-            transition: "all 0.3s ease",
-          }}
-        >
-          {statusMap[status] || status}
-        </span>
-      ),
+      render: (status: string) => {
+         let className = "status-tag";
+         if (status === "Signed") className += " success";
+         else if (status === "Executing" || status === "Completed") className += " warning"; // Adjust logic if needed
+         
+         // Custom mapping based on user description:
+         // Signed: success (green)
+         // Executing: maybe blue or warning? User said "Executing" (Wait for audit?) -> warning
+         // Actually user said: "Signed" -> success, "Pending Audit" -> warning.
+         // Let's stick to the CSS classes provided.
+         
+         const statusStyle: React.CSSProperties = {};
+         if (status === "Signed") {
+             // success
+             return <span className="status-tag success">{statusMap[status] || status}</span>;
+         } else if (status === "Executing") {
+             // Use default or maybe a primary light color? 
+             // User didn't specify for Executing. I'll use a blue-ish custom one or warning.
+             // Let's use a custom inline style for blue if not defined in CSS.
+             return <span className="status-tag" style={{backgroundColor: '#EFF6FF', color: '#3B82F6'}}>{statusMap[status] || status}</span>;
+         } else if (status === "Completed") {
+             // Maybe gray or success?
+             return <span className="status-tag" style={{backgroundColor: '#F1F5F9', color: '#64748B'}}>{statusMap[status] || status}</span>;
+         } else if (status === "Terminated") {
+              return <span className="status-tag" style={{backgroundColor: '#FEF2F2', color: '#EF4444'}}>{statusMap[status] || status}</span>;
+         }
+
+         return <span className={className}>{statusMap[status] || status}</span>;
+      },
     },
     {
       title: "操作",
@@ -179,7 +179,7 @@ const ContractList: React.FC = () => {
       render: (_, record) => (
         <Space size="small">
           <Button
-            type="link"
+            className="btn-secondary"
             size="small"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
@@ -187,9 +187,8 @@ const ContractList: React.FC = () => {
             编辑
           </Button>
           <Button
-            type="link"
+            className="btn-danger"
             size="small"
-            danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record)}
           >
@@ -281,45 +280,13 @@ const ContractList: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        padding: 24,
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        minHeight: "100vh",
-        animation: "gradient 15s ease infinite",
-        backgroundSize: "200% 200%",
-      }}
-    >
-      <style>{`
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: 16,
-          padding: 24,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-          backdropFilter: "blur(10px)",
-          animation: "slideIn 0.6s ease-out",
-        }}
-      >
+    <div className="contract-container">
         <h1
           style={{
             marginBottom: 24,
-            fontSize: 28,
+            fontSize: 24,
             fontWeight: 600,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            letterSpacing: "2px",
+            color: "#1E293B",
           }}
         >
           合同管理系统
@@ -331,7 +298,7 @@ const ContractList: React.FC = () => {
             placeholder="搜索合同编号、名称"
             onSearch={handleSearch}
             style={{ width: 250 }}
-            enterButton={<SearchOutlined />}
+            allowClear
           />
           <Select
             placeholder="选择状态"
@@ -371,14 +338,20 @@ const ContractList: React.FC = () => {
               </Option>
             ))}
           </Select>
-          <Button onClick={handleReset}>重置</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+          <Button onClick={handleReset} className="btn-secondary">重置</Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            className="btn-primary"
+          >
             新增合同
           </Button>
         </Space>
 
         {/* 表格 */}
         <Table
+          className="contract-table"
           columns={columns}
           dataSource={contracts}
           rowKey="id"
@@ -505,7 +478,6 @@ const ContractList: React.FC = () => {
             </Form.Item>
           </Form>
         </Modal>
-      </div>
     </div>
   );
 };

@@ -1,13 +1,204 @@
-body {
+/* 全局样式重置 & 基础配置 */
+* {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+  /* 统一圆角，打造柔和简约感 */
+  --radius-base: 8px;
+  /* 轻量阴影，增强层级但不突兀 */
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-* {
-  box-sizing: border-box;
+body {
+  background-color: #F8FAFC; /* 全局浅灰背景 */
+  color: #1E293B; /* 主文字色 */
+  font-family: "Microsoft Yahei", sans-serif; /* 适配中文的简约字体 */
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 页面容器：合同管理核心模块外层 */
+.contract-container {
+  width: 98%;
+  margin: 16px auto;
+  background-color: #FFFFFF; /* 纯白模块背景 */
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-light);
+  padding: 20px;
+}
+
+/* 导航/侧边栏样式（高效简约版） */
+.sidebar {
+  background-color: #FFFFFF;
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-light);
+  padding: 12px 0;
+  height: 100%;
+  width: 200px; /* Added fixed width for layout */
+  flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar.collapsed {
+  width: 64px;
+}
+
+.sidebar .menu-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+  display: flex; /* Ensure alignment */
+  align-items: center;
+  gap: 12px;
+  color: #64748B; /* Default color */
+  text-decoration: none;
+  white-space: nowrap;
+  height: 44px;
+}
+
+.sidebar.collapsed .menu-item {
+  padding: 10px 0;
+  justify-content: center;
+}
+
+.sidebar .menu-item .icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 选中态：主强调色高亮 */
+.sidebar .menu-item.active {
+  background-color: #EFF6FF; /* 浅蓝背景 */
+  border-left-color: #3B82F6;
+  color: #3B82F6;
+}
+.sidebar .menu-item:hover {
+  background-color: #F1F5F9; /* hover浅灰背景 */
+}
+
+/* Glassmorphism Effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 表格样式（核心数据展示区） */
+.contract-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #FFFFFF;
+  border-radius: var(--radius-base);
+  overflow: hidden; /* 让表格圆角生效 */
+}
+/* 表头样式 */
+.contract-table thead th {
+  background-color: #F1F5F9; /* 浅灰表头 */
+  color: #1E293B;
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 500;
+  border-bottom: 1px solid #E2E8F0;
+}
+/* 表体样式 */
+.contract-table tbody td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #E2E8F0;
+  color: #1E293B;
+}
+/* 行hover效果 */
+.contract-table tbody tr:hover {
+  background-color: #EFF6FF; /* 浅蓝hover态 */
+  transition: background-color 0.2s ease;
+}
+/* 次要文字：如备注、时间 */
+.contract-table .text-secondary {
+  color: #64748B;
+}
+
+/* 按钮样式（高效简约） */
+/* 主按钮：新增/提交等核心操作 */
+.btn-primary {
+  background-color: #3B82F6 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: var(--radius-base) !important;
+  padding: 4px 15px !important; /* Antd button padding adjustment */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: #2563EB !important; /* hover加深一点 */
+}
+/* 次要按钮：编辑/查看等 */
+.btn-secondary {
+  background-color: #F1F5F9 !important;
+  color: #1E293B !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: var(--radius-base) !important;
+  padding: 4px 15px !important;
+  cursor: pointer;
+}
+/* 危险按钮：删除/驳回 */
+.btn-danger {
+  background-color: #FEF2F2 !important;
+  color: #EF4444 !important;
+  border: 1px solid #FECDD3 !important;
+  border-radius: var(--radius-base) !important;
+  padding: 4px 15px !important;
+  cursor: pointer;
+}
+
+/* 状态标签样式（如已签订/待审核） */
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px; /* 小圆角更精致 */
+  font-size: 12px;
+  display: inline-block;
+}
+/* 成功状态：已签订 */
+.status-tag.success {
+  background-color: #ECFDF5;
+  color: #10B981;
+}
+/* 警告状态：待审核 */
+.status-tag.warning {
+  background-color: #FFFBEB;
+  color: #F59E0B;
+}
+
+/* Layout Wrapper */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  padding: 16px;
+  gap: 16px;
+}
+
+.main-content {
+  flex: 1;
+  /* overflow-y: auto; */
 }
