@@ -49,13 +49,13 @@ const ContractList: React.FC = () => {
 
   // 合同状态选项
   const statusOptions = ["Executing", "Signed", "Completed", "Terminated"];
-  
+
   // 状态映射
   const statusMap: Record<string, string> = {
-    "Executing": "执行中",
-    "Signed": "已签订",
-    "Completed": "已完成",
-    "Terminated": "已终止"
+    Executing: "执行中",
+    Signed: "已签订",
+    Completed: "已完成",
+    Terminated: "已终止",
   };
 
   // 加载合同列表
@@ -142,19 +142,31 @@ const ContractList: React.FC = () => {
       key: "status",
       width: 100,
       render: (status: string) => (
-        <span style={{
-          padding: '4px 12px',
-          borderRadius: 12,
-          fontSize: 12,
-          fontWeight: 500,
-          background: status === 'Executing' ? '#e6f7ff' : 
-                     status === 'Signed' ? '#f6ffed' : 
-                     status === 'Completed' ? '#f0f0f0' : '#fff1f0',
-          color: status === 'Executing' ? '#1890ff' : 
-                status === 'Signed' ? '#52c41a' : 
-                status === 'Completed' ? '#8c8c8c' : '#ff4d4f',
-          transition: 'all 0.3s ease'
-        }}>
+        <span
+          style={{
+            padding: "4px 12px",
+            borderRadius: 12,
+            fontSize: 12,
+            fontWeight: 500,
+            background:
+              status === "Executing"
+                ? "#e6f7ff"
+                : status === "Signed"
+                ? "#f6ffed"
+                : status === "Completed"
+                ? "#f0f0f0"
+                : "#fff1f0",
+            color:
+              status === "Executing"
+                ? "#1890ff"
+                : status === "Signed"
+                ? "#52c41a"
+                : status === "Completed"
+                ? "#8c8c8c"
+                : "#ff4d4f",
+            transition: "all 0.3s ease",
+          }}
+        >
           {statusMap[status] || status}
         </span>
       ),
@@ -269,13 +281,15 @@ const ContractList: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      padding: 24, 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      minHeight: '100vh',
-      animation: 'gradient 15s ease infinite',
-      backgroundSize: '200% 200%'
-    }}>
+    <div
+      style={{
+        padding: 24,
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        minHeight: "100vh",
+        animation: "gradient 15s ease infinite",
+        backgroundSize: "200% 200%",
+      }}
+    >
       <style>{`
         @keyframes gradient {
           0% { background-position: 0% 50%; }
@@ -289,12 +303,12 @@ const ContractList: React.FC = () => {
       `}</style>
       <div
         style={{
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: "rgba(255, 255, 255, 0.95)",
           borderRadius: 16,
           padding: 24,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          backdropFilter: 'blur(10px)',
-          animation: 'slideIn 0.6s ease-out',
+          boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+          backdropFilter: "blur(10px)",
+          animation: "slideIn 0.6s ease-out",
         }}
       >
         <h1
@@ -302,10 +316,10 @@ const ContractList: React.FC = () => {
             marginBottom: 24,
             fontSize: 28,
             fontWeight: 600,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '2px',
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "2px",
           }}
         >
           合同管理系统
