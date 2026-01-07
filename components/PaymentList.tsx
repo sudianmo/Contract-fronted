@@ -108,15 +108,22 @@ const PaymentList: React.FC = () => {
       key: "paymentStatus",
       width: 100,
       render: (value) => {
-         let className = "status-tag";
-         if (value === "Completed") className += " success";
-         else if (value === "Pending") className += " warning";
-         else if (value === "Failed") className += " danger"; // Assuming danger class exists or just use inline style
+        let className = "status-tag";
+        if (value === "Completed") className += " success";
+        else if (value === "Pending") className += " warning";
+        else if (value === "Failed") className += " danger"; // Assuming danger class exists or just use inline style
 
-         if (value === "Failed") {
-             return <span className="status-tag" style={{backgroundColor: '#FEF2F2', color: '#EF4444'}}>{statusMap[value] || value}</span>
-         }
-         return <span className={className}>{statusMap[value] || value}</span>
+        if (value === "Failed") {
+          return (
+            <span
+              className="status-tag"
+              style={{ backgroundColor: "#FEF2F2", color: "#EF4444" }}
+            >
+              {statusMap[value] || value}
+            </span>
+          );
+        }
+        return <span className={className}>{statusMap[value] || value}</span>;
       },
     },
     {
@@ -131,23 +138,51 @@ const PaymentList: React.FC = () => {
       width: 150,
       fixed: "right",
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            className="btn-secondary"
-            size="small"
-            icon={<EditOutlined />}
+        <Space size="middle">
+          <div
             onClick={() => handleEdit(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(108, 43, 217, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            编辑
-          </Button>
-          <Button
-            className="btn-danger"
-            size="small"
-            icon={<DeleteOutlined />}
+            <EditOutlined style={{ fontSize: 20, color: "#6C2BD9" }} />
+          </div>
+          <div
             onClick={() => handleDelete(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            删除
-          </Button>
+            <DeleteOutlined style={{ fontSize: 20, color: "#FF3B30" }} />
+          </div>
         </Space>
       ),
     },
@@ -213,118 +248,118 @@ const PaymentList: React.FC = () => {
 
   return (
     <div className="contract-container">
-        <h1
-          style={{
-            marginBottom: 24,
-            fontSize: 24,
-            fontWeight: 500,
-            color: "#1E293B",
-          }}
-        >
-          支付管理
-        </h1>
+      <h1
+        style={{
+          marginBottom: 24,
+          fontSize: 24,
+          fontWeight: 500,
+          color: "#1E293B",
+        }}
+      >
+        支付管理
+      </h1>
 
-        <Space style={{ marginBottom: 16 }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-            className="btn-primary"
+      <Space style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAdd}
+          className="btn-primary"
+        >
+          新增支付
+        </Button>
+      </Space>
+
+      <Table
+        className="contract-table"
+        columns={columns}
+        dataSource={payments}
+        rowKey="id"
+        loading={loading}
+        scroll={{ x: 1000 }}
+        pagination={{
+          current: pageNum,
+          pageSize: pageSize,
+          total: total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
+        }}
+      />
+
+      <Modal
+        title={editingPayment ? "编辑支付" : "新增支付"}
+        open={modalVisible}
+        onOk={handleSave}
+        onCancel={() => setModalVisible(false)}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="合同"
+            name="contractId"
+            rules={[{ required: true, message: "请选择合同" }]}
           >
-            新增支付
-          </Button>
-        </Space>
-
-        <Table
-          className="contract-table"
-          columns={columns}
-          dataSource={payments}
-          rowKey="id"
-          loading={loading}
-          scroll={{ x: 1000 }}
-          pagination={{
-            current: pageNum,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条`,
-            onChange: (page, size) => {
-              setPageNum(page);
-              setPageSize(size);
-            },
-          }}
-        />
-
-        <Modal
-          title={editingPayment ? "编辑支付" : "新增支付"}
-          open={modalVisible}
-          onOk={handleSave}
-          onCancel={() => setModalVisible(false)}
-          okText="保存"
-          cancelText="取消"
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="合同"
-              name="contractId"
-              rules={[{ required: true, message: "请选择合同" }]}
-            >
-              <Select placeholder="请选择合同">
-                {contracts.map((c) => (
-                  <Option key={c.id} value={c.id}>
-                    {c.contractName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label="支付金额"
-              name="paymentAmount"
-              rules={[{ required: true, message: "请输入支付金额" }]}
-            >
-              <InputNumber
-                style={{ width: "100%" }}
-                min={0}
-                precision={2}
-                placeholder="请输入支付金额"
-              />
-            </Form.Item>
-            <Form.Item
-              label="支付日期"
-              name="paymentDate"
-              rules={[{ required: true, message: "请选择支付日期" }]}
-            >
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-            <Form.Item
-              label="支付方式"
-              name="paymentMethod"
-              rules={[{ required: true, message: "请输入支付方式" }]}
-            >
-              <Select placeholder="请选择支付方式">
-                <Option value="Bank Transfer">银行转账</Option>
-                <Option value="Cash">现金</Option>
-                <Option value="Check">支票</Option>
-                <Option value="Other">其他</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label="支付状态"
-              name="paymentStatus"
-              rules={[{ required: true, message: "请选择支付状态" }]}
-            >
-              <Select placeholder="请选择支付状态">
-                <Option value="Pending">待支付</Option>
-                <Option value="Completed">已完成</Option>
-                <Option value="Failed">失败</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="备注" name="remarks">
-              <Input.TextArea />
-            </Form.Item>
-          </Form>
-        </Modal>
+            <Select placeholder="请选择合同">
+              {contracts.map((c) => (
+                <Option key={c.id} value={c.id}>
+                  {c.contractName}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="支付金额"
+            name="paymentAmount"
+            rules={[{ required: true, message: "请输入支付金额" }]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              min={0}
+              precision={2}
+              placeholder="请输入支付金额"
+            />
+          </Form.Item>
+          <Form.Item
+            label="支付日期"
+            name="paymentDate"
+            rules={[{ required: true, message: "请选择支付日期" }]}
+          >
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="支付方式"
+            name="paymentMethod"
+            rules={[{ required: true, message: "请输入支付方式" }]}
+          >
+            <Select placeholder="请选择支付方式">
+              <Option value="Bank Transfer">银行转账</Option>
+              <Option value="Cash">现金</Option>
+              <Option value="Check">支票</Option>
+              <Option value="Other">其他</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="支付状态"
+            name="paymentStatus"
+            rules={[{ required: true, message: "请选择支付状态" }]}
+          >
+            <Select placeholder="请选择支付状态">
+              <Option value="Pending">待支付</Option>
+              <Option value="Completed">已完成</Option>
+              <Option value="Failed">失败</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item label="备注" name="remarks">
+            <Input.TextArea />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

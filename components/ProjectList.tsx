@@ -13,7 +13,12 @@ import {
   DatePicker,
   Select,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import {
   getProjectList,
@@ -117,15 +122,22 @@ const ProjectList: React.FC = () => {
       key: "status",
       width: 100,
       render: (value) => {
-         let className = "status-tag";
-         if (value === "Completed") className += " success";
-         else if (value === "InProgress") className += " warning";
-         else if (value === "Suspended") className += " danger"; // or inline
+        let className = "status-tag";
+        if (value === "Completed") className += " success";
+        else if (value === "InProgress") className += " warning";
+        else if (value === "Suspended") className += " danger"; // or inline
 
-         if (value === "Suspended") {
-             return <span className="status-tag" style={{backgroundColor: '#FEF2F2', color: '#EF4444'}}>{statusMap[value] || value}</span>
-         }
-         return <span className={className}>{statusMap[value] || value}</span>
+        if (value === "Suspended") {
+          return (
+            <span
+              className="status-tag"
+              style={{ backgroundColor: "#FEF2F2", color: "#EF4444" }}
+            >
+              {statusMap[value] || value}
+            </span>
+          );
+        }
+        return <span className={className}>{statusMap[value] || value}</span>;
       },
     },
     {
@@ -134,23 +146,51 @@ const ProjectList: React.FC = () => {
       width: 150,
       fixed: "right",
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            className="btn-secondary"
-            size="small"
-            icon={<EditOutlined />}
+        <Space size="middle">
+          <div
             onClick={() => handleEdit(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(108, 43, 217, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            编辑
-          </Button>
-          <Button
-            className="btn-danger"
-            size="small"
-            icon={<DeleteOutlined />}
+            <EditOutlined style={{ fontSize: 20, color: "#6C2BD9" }} />
+          </div>
+          <div
             onClick={() => handleDelete(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            删除
-          </Button>
+            <DeleteOutlined style={{ fontSize: 20, color: "#FF3B30" }} />
+          </div>
         </Space>
       ),
     },
@@ -165,9 +205,13 @@ const ProjectList: React.FC = () => {
   const handleEdit = (record: Project) => {
     setEditingProject(record);
     form.setFieldsValue({
-      ...record,
+      projectName: record.projectName,
+      customerId: record.customerId,
       startDate: record.startDate ? dayjs(record.startDate) : null,
       endDate: record.endDate ? dayjs(record.endDate) : null,
+      budget: record.budget,
+      status: record.status,
+      description: record.description,
     });
     setModalVisible(true);
   };
@@ -230,129 +274,131 @@ const ProjectList: React.FC = () => {
 
   return (
     <div className="contract-container">
-        <h1
-          style={{
-            marginBottom: 24,
-            fontSize: 24,
-            fontWeight: 500,
-            color: "#1E293B",
-          }}
-        >
-          项目管理
-        </h1>
+      <h1
+        style={{
+          marginBottom: 24,
+          fontSize: 24,
+          fontWeight: 500,
+          color: "#1E293B",
+        }}
+      >
+        项目管理
+      </h1>
 
-        <Space style={{ marginBottom: 16 }}>
-          <Search
-            placeholder="搜索项目名称"
-            onSearch={handleSearch}
-            style={{ width: 250 }}
-            enterButton={<SearchOutlined />}
-            allowClear
-          />
-          <Button onClick={handleReset} className="btn-secondary">重置</Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-            className="btn-primary"
-          >
-            新增项目
-          </Button>
-        </Space>
-
-        <Table
-          className="contract-table"
-          columns={columns}
-          dataSource={projects}
-          rowKey="id"
-          loading={loading}
-          scroll={{ x: 1000 }}
-          pagination={{
-            current: pageNum,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条`,
-            onChange: (page, size) => {
-              setPageNum(page);
-              setPageSize(size);
-            },
-          }}
+      <Space style={{ marginBottom: 16 }}>
+        <Search
+          placeholder="搜索项目名称"
+          onSearch={handleSearch}
+          style={{ width: 250 }}
+          enterButton={<SearchOutlined />}
+          allowClear
         />
-
-        <Modal
-          title={editingProject ? "编辑项目" : "新增项目"}
-          open={modalVisible}
-          onOk={handleSave}
-          onCancel={() => setModalVisible(false)}
-          okText="保存"
-          cancelText="取消"
+        <Button onClick={handleReset} className="btn-secondary">
+          重置
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAdd}
+          className="btn-primary"
         >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="项目名称"
-              name="projectName"
-              rules={[{ required: true, message: "请输入项目名称" }]}
-            >
-              <Input placeholder="请输入项目名称" />
-            </Form.Item>
-            <Form.Item
-              label="客户"
-              name="clientId"
-              rules={[{ required: true, message: "请选择客户" }]}
-            >
-              <Select placeholder="请选择客户">
-                {clients.map((c) => (
-                  <Option key={c.id} value={c.id}>
-                    {c.clientName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label="开始日期"
-              name="startDate"
-              rules={[{ required: true, message: "请选择开始日期" }]}
-            >
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-            <Form.Item
-              label="结束日期"
-              name="endDate"
-              rules={[{ required: true, message: "请选择结束日期" }]}
-            >
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-            <Form.Item
-              label="预算"
-              name="budget"
-              rules={[{ required: true, message: "请输入预算" }]}
-            >
-              <InputNumber
-                style={{ width: "100%" }}
-                min={0}
-                precision={2}
-                placeholder="请输入预算"
-              />
-            </Form.Item>
-            <Form.Item
-              label="状态"
-              name="status"
-              rules={[{ required: true, message: "请选择状态" }]}
-            >
-              <Select placeholder="请选择状态">
-                <Option value="Planning">规划中</Option>
-                <Option value="InProgress">进行中</Option>
-                <Option value="Completed">已完成</Option>
-                <Option value="Suspended">已暂停</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="描述" name="description">
-              <Input.TextArea />
-            </Form.Item>
-          </Form>
-        </Modal>
+          新增项目
+        </Button>
+      </Space>
+
+      <Table
+        className="contract-table"
+        columns={columns}
+        dataSource={projects}
+        rowKey="id"
+        loading={loading}
+        scroll={{ x: 1000 }}
+        pagination={{
+          current: pageNum,
+          pageSize: pageSize,
+          total: total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
+        }}
+      />
+
+      <Modal
+        title={editingProject ? "编辑项目" : "新增项目"}
+        open={modalVisible}
+        onOk={handleSave}
+        onCancel={() => setModalVisible(false)}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="项目名称"
+            name="projectName"
+            rules={[{ required: true, message: "请输入项目名称" }]}
+          >
+            <Input placeholder="请输入项目名称" />
+          </Form.Item>
+          <Form.Item
+            label="客户"
+            name="customerId"
+            rules={[{ required: true, message: "请选择客户" }]}
+          >
+            <Select placeholder="请选择客户">
+              {clients.map((c) => (
+                <Option key={c.id} value={c.id}>
+                  {c.clientName}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="开始日期"
+            name="startDate"
+            rules={[{ required: true, message: "请选择开始日期" }]}
+          >
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="结束日期"
+            name="endDate"
+            rules={[{ required: true, message: "请选择结束日期" }]}
+          >
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="预算"
+            name="budget"
+            rules={[{ required: true, message: "请输入预算" }]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              min={0}
+              precision={2}
+              placeholder="请输入预算"
+            />
+          </Form.Item>
+          <Form.Item
+            label="状态"
+            name="status"
+            rules={[{ required: true, message: "请选择状态" }]}
+          >
+            <Select placeholder="请选择状态">
+              <Option value="Planning">规划中</Option>
+              <Option value="InProgress">进行中</Option>
+              <Option value="Completed">已完成</Option>
+              <Option value="Suspended">已暂停</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item label="描述" name="description">
+            <Input.TextArea />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

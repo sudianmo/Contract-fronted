@@ -91,23 +91,51 @@ const ClientList: React.FC = () => {
       width: 150,
       fixed: "right",
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            className="btn-secondary"
-            size="small"
-            icon={<EditOutlined />}
+        <Space size="middle">
+          <div
             onClick={() => handleEdit(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(108, 43, 217, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            编辑
-          </Button>
-          <Button
-            className="btn-danger"
-            size="small"
-            icon={<DeleteOutlined />}
+            <EditOutlined style={{ fontSize: 20, color: "#6C2BD9" }} />
+          </div>
+          <div
             onClick={() => handleDelete(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            删除
-          </Button>
+            <DeleteOutlined style={{ fontSize: 20, color: "#FF3B30" }} />
+          </div>
         </Space>
       ),
     },
@@ -180,114 +208,116 @@ const ClientList: React.FC = () => {
 
   return (
     <div className="contract-container">
-        <h1
-          style={{
-            marginBottom: 24,
-            fontSize: 24,
-            fontWeight: 500,
-            color: "#1E293B",
-          }}
-        >
-          客户管理
-        </h1>
+      <h1
+        style={{
+          marginBottom: 24,
+          fontSize: 24,
+          fontWeight: 500,
+          color: "#1E293B",
+        }}
+      >
+        客户管理
+      </h1>
 
-        {/* 搜索区域 */}
-        <Space style={{ marginBottom: 16 }} size="middle">
-          <Search
-            placeholder="搜索客户名称、联系人"
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-            enterButton={<SearchOutlined />}
-            allowClear
-          />
-          <Button onClick={handleReset} className="btn-secondary">重置</Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-            className="btn-primary"
-          >
-            新增客户
-          </Button>
-        </Space>
-
-        {/* 表格 */}
-        <Table
-          className="contract-table"
-          columns={columns}
-          dataSource={clients}
-          rowKey="id"
-          loading={loading}
-          scroll={{ x: 1000 }}
-          pagination={{
-            current: pageNum,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条`,
-            onChange: (page, size) => {
-              setPageNum(page);
-              setPageSize(size);
-            },
-          }}
+      {/* 搜索区域 */}
+      <Space style={{ marginBottom: 16 }} size="middle">
+        <Search
+          placeholder="搜索客户名称、联系人"
+          onSearch={handleSearch}
+          style={{ width: 300 }}
+          enterButton={<SearchOutlined />}
+          allowClear
         />
-
-        {/* 新增/编辑弹窗 */}
-        <Modal
-          title={editingClient ? "编辑客户" : "新增客户"}
-          open={modalVisible}
-          onOk={handleSave}
-          onCancel={() => setModalVisible(false)}
-          width={700}
-          okText="保存"
-          cancelText="取消"
+        <Button onClick={handleReset} className="btn-secondary">
+          重置
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAdd}
+          className="btn-primary"
         >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="客户名称"
-              name="clientName"
-              rules={[{ required: true, message: "请输入客户名称" }]}
-            >
-              <Input placeholder="请输入客户名称" />
-            </Form.Item>
+          新增客户
+        </Button>
+      </Space>
 
-            <Form.Item
-              label="联系人"
-              name="contactPerson"
-              rules={[{ required: true, message: "请输入联系人" }]}
-            >
-              <Input placeholder="请输入联系人" />
-            </Form.Item>
+      {/* 表格 */}
+      <Table
+        className="contract-table"
+        columns={columns}
+        dataSource={clients}
+        rowKey="id"
+        loading={loading}
+        scroll={{ x: 1000 }}
+        pagination={{
+          current: pageNum,
+          pageSize: pageSize,
+          total: total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
+        }}
+      />
 
-            <Form.Item
-              label="联系电话"
-              name="contactPhone"
-              rules={[
-                { required: true, message: "请输入联系电话" },
-                { pattern: /^1[3-9]\d{9}$/, message: "请输入有效的手机号码" },
-              ]}
-            >
-              <Input placeholder="请输入联系电话" />
-            </Form.Item>
+      {/* 新增/编辑弹窗 */}
+      <Modal
+        title={editingClient ? "编辑客户" : "新增客户"}
+        open={modalVisible}
+        onOk={handleSave}
+        onCancel={() => setModalVisible(false)}
+        width={700}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="客户名称"
+            name="clientName"
+            rules={[{ required: true, message: "请输入客户名称" }]}
+          >
+            <Input placeholder="请输入客户名称" />
+          </Form.Item>
 
-            <Form.Item
-              label="联系邮箱"
-              name="contactEmail"
-              rules={[{ type: "email", message: "请输入有效的邮箱地址" }]}
-            >
-              <Input placeholder="请输入联系邮箱" />
-            </Form.Item>
+          <Form.Item
+            label="联系人"
+            name="contactPerson"
+            rules={[{ required: true, message: "请输入联系人" }]}
+          >
+            <Input placeholder="请输入联系人" />
+          </Form.Item>
 
-            <Form.Item label="地址" name="address">
-              <Input placeholder="请输入地址" />
-            </Form.Item>
+          <Form.Item
+            label="联系电话"
+            name="contactPhone"
+            rules={[
+              { required: true, message: "请输入联系电话" },
+              { pattern: /^1[3-9]\d{9}$/, message: "请输入有效的手机号码" },
+            ]}
+          >
+            <Input placeholder="请输入联系电话" />
+          </Form.Item>
 
-            <Form.Item label="备注" name="remark">
-              <Input.TextArea rows={3} placeholder="请输入备注" />
-            </Form.Item>
-          </Form>
-        </Modal>
+          <Form.Item
+            label="联系邮箱"
+            name="contactEmail"
+            rules={[{ type: "email", message: "请输入有效的邮箱地址" }]}
+          >
+            <Input placeholder="请输入联系邮箱" />
+          </Form.Item>
+
+          <Form.Item label="地址" name="address">
+            <Input placeholder="请输入地址" />
+          </Form.Item>
+
+          <Form.Item label="备注" name="remark">
+            <Input.TextArea rows={3} placeholder="请输入备注" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

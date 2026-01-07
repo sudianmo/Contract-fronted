@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   FileTextOutlined,
   TeamOutlined,
@@ -8,80 +9,216 @@ import {
   ProjectOutlined,
   DollarOutlined,
   ArrowRightOutlined,
+  DatabaseOutlined,
 } from "@ant-design/icons";
 
 export default function Home() {
   const router = useRouter();
+  const [animatedValues, setAnimatedValues] = useState({
+    contracts: 0,
+    amount: 0,
+    clients: 0,
+    projects: 0,
+  });
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = "translateY(-4px)";
-    e.currentTarget.style.boxShadow = "0 10px 30px rgba(59, 130, 246, 0.1)";
-  };
+  // 数字滚动动画
+  useEffect(() => {
+    const targets = {
+      contracts: 128,
+      amount: 2450,
+      clients: 12,
+      projects: 8,
+    };
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = "translateY(0)";
-    e.currentTarget.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.05)";
-  };
+    const duration = 1000; // 1秒
+    const steps = 60;
+    const interval = duration / steps;
+
+    let currentStep = 0;
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const easeProgress = 1 - Math.pow(1 - progress, 3); // 先快后慢
+
+      setAnimatedValues({
+        contracts: Math.floor(targets.contracts * easeProgress),
+        amount: Math.floor(targets.amount * easeProgress),
+        clients: Math.floor(targets.clients * easeProgress),
+        projects: Math.floor(targets.projects * easeProgress),
+      });
+
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setAnimatedValues(targets);
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div
-      className="animate-fade-in-up"
       style={{
-        padding: "24px 32px",
+        padding: "24px 48px",
         minHeight: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: 32,
+        gap: 24,
+        position: "relative",
+        overflow: "visible",
       }}
     >
-      {/* Header Section */}
-      <div style={{ marginBottom: 16 }}>
+      {/* 左上角30%炭黑毛玻璃区 - 禁用 */}
+      {/* 已替换为body的拼图纹理背景 */}
+
+      {/* 右侧70%淡白毛玻璃区 - 禁用 */}
+      {/* 已替换为body的拼图纹理背景 */}
+
+      {/* 斜线分割装饰 - 禁用 */}
+      {/* 已替换为body的拼图纹理背景 */}
+      {/* Header Section - 壮观英文主视觉 */}
+      <div
+        style={{
+          marginBottom: 24,
+          marginTop: 32,
+          opacity: 0,
+          animation:
+            "fadeInUp 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
         <h1
           style={{
-            fontSize: 32,
-            fontWeight: 600,
-            color: "#1E293B",
-            marginBottom: 8,
+            fontSize: 48,
+            fontWeight: 900,
+            fontFamily: "'Roboto Condensed', 'Inter', sans-serif",
+            color: "#F2F2F7",
+            margin: 0,
+            lineHeight: 1.2,
+            textShadow: "0 4px 8px rgba(242, 242, 247, 0.1)",
+            letterSpacing: 1,
           }}
         >
-          欢迎回来，管理员
+          Welcome
         </h1>
-        <p style={{ color: "#64748B", fontSize: 16 }}>
+        <div
+          style={{
+            fontSize: 20,
+            fontWeight: 600,
+            color: "#6C2BD9",
+            margin: "8px 0 0 0",
+            letterSpacing: 0.5,
+            textShadow: "0 0 8px rgba(108, 43, 217, 0.5)",
+          }}
+        >
+          Admin
+        </div>
+        <p
+          style={{
+            color: "#86868B",
+            fontSize: 14,
+            lineHeight: 1.5,
+            margin: "12px 0 0 0",
+            fontWeight: 400,
+          }}
+        >
           这里是您的工作台，今日各项数据概览如下
         </p>
       </div>
 
-      {/* Statistics Section - More Prominent */}
+      {/* Statistics Section - Apple Style */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
           gap: 24,
+          position: "relative",
+          zIndex: 2,
         }}
       >
         {[
-          { label: "总合同数", value: "128", unit: "份", change: "+12%" },
-          { label: "总金额", value: "¥2,450k", unit: "", change: "+5.2%" },
-          { label: "本月新增客户", value: "12", unit: "位", change: "+8%" },
-          { label: "进行中项目", value: "8", unit: "个", change: "0%" },
+          {
+            label: "总合同数",
+            value: animatedValues.contracts,
+            unit: "份",
+            change: "+12%",
+          },
+          {
+            label: "总金额",
+            value: `¥${(animatedValues.amount / 1000).toFixed(1)}k`,
+            unit: "",
+            change: "+5.2%",
+          },
+          {
+            label: "本月新增客户",
+            value: animatedValues.clients,
+            unit: "位",
+            change: "+8%",
+          },
+          {
+            label: "进行中项目",
+            value: animatedValues.projects,
+            unit: "个",
+            change: "0%",
+          },
         ].map((stat, index) => (
           <div
             key={index}
-            className="glass-effect"
             style={{
-              padding: "24px",
-              borderRadius: 16,
+              position: "relative",
+              background: "rgba(30, 30, 35, 0.7)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(242, 242, 247, 0.2)",
+              padding: "20px 24px",
+              borderRadius: 18,
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
-              height: 140,
-              transition: "transform 0.2s ease",
+              height: 88,
+              transition: "all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)",
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
+              cursor: "pointer",
+              opacity: 0,
+              animation: `fadeInUp 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) ${
+                0.1 + index * 0.1
+              }s forwards`,
+              animationName: "fadeInUp, breatheShadow",
+              animationDuration: "0.5s, 3s",
+              animationDelay: `${0.1 + index * 0.1}s, ${0.6 + index * 0.1}s`,
+              animationIterationCount: "1, infinite",
+              animationTimingFunction:
+                "cubic-bezier(0.25, 0.1, 0.25, 1.0), ease-in-out",
+              transform: "translateY(1px)",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.transform = "scale(1.02)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow =
+                "0 12px 32px rgba(0, 0, 0, 0.3)";
+              e.currentTarget.style.background = "rgba(30, 30, 35, 0.85)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(1px)";
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.2)";
+              e.currentTarget.style.background = "rgba(30, 30, 35, 0.7)";
+            }}
           >
+            {/* XAUT水印 */}
+            <div
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                fontSize: 20,
+                fontWeight: 300,
+                color: "rgba(108, 43, 217, 0.15)",
+                letterSpacing: 1,
+                textShadow: "0 0 4px rgba(108, 43, 217, 0.3)",
+              }}
+            >
+              XAUT
+            </div>
             <div
               style={{
                 display: "flex",
@@ -89,50 +226,60 @@ export default function Home() {
                 alignItems: "flex-start",
               }}
             >
-              <span style={{ color: "#64748B", fontSize: 14 }}>
+              <span style={{ color: "#86868B", fontSize: 12, fontWeight: 400 }}>
                 {stat.label}
               </span>
               <span
                 style={{
-                  color: stat.change.startsWith("+") ? "#10B981" : "#64748B",
+                  color: stat.change.startsWith("+") ? "#34C759" : "#86868B",
                   fontSize: 12,
+                  fontWeight: 500,
                   background: stat.change.startsWith("+")
-                    ? "#ECFDF5"
-                    : "#F1F5F9",
-                  padding: "2px 8px",
-                  borderRadius: 12,
+                    ? "rgba(52, 199, 89, 0.15)"
+                    : "transparent",
+                  padding: stat.change.startsWith("+") ? "2px 6px" : "0",
+                  borderRadius: 4,
+                  textShadow: stat.change.startsWith("+")
+                    ? "0 0 4px rgba(52, 199, 89, 0.3)"
+                    : "none",
                 }}
               >
                 {stat.change}
               </span>
             </div>
             <div>
-              <span style={{ fontSize: 36, fontWeight: 700, color: "#1E293B" }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#F2F2F7" }}>
                 {stat.value}
               </span>
-              <span
-                style={{
-                  fontSize: 14,
-                  color: "#94A3B8",
-                  marginLeft: 4,
-                  fontWeight: 500,
-                }}
-              >
-                {stat.unit}
-              </span>
+              {stat.unit && (
+                <span
+                  style={{
+                    fontSize: 14,
+                    color: "#86868B",
+                    marginLeft: 4,
+                    fontWeight: 400,
+                  }}
+                >
+                  {stat.unit}
+                </span>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Quick Navigation - Flexible Grid */}
-      <div>
+      {/* Quick Navigation - Apple Minimalist Style */}
+      <div style={{ position: "relative", zIndex: 2 }}>
         <h2
           style={{
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: 600,
-            color: "#1E293B",
-            marginBottom: 20,
+            color: "#F2F2F7",
+            marginBottom: 16,
+            lineHeight: 1.5,
+            opacity: 0,
+            animation:
+              "fadeInUp 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.5s forwards",
           }}
         >
           快捷导航
@@ -140,303 +287,166 @@ export default function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)", // Changed to 3 columns for better flexibility
+            gridTemplateColumns: "repeat(3, 1fr)",
             gap: 24,
-            gridAutoRows: "180px", // Fixed height for consistency
           }}
         >
-          {/* Contracts - Large Card */}
-          <div
-            className="glass-effect"
-            style={{
-              gridColumn: "span 1",
-              borderRadius: 16,
-              padding: 24,
-              cursor: "pointer",
-              position: "relative",
-              overflow: "hidden",
-              transition: "all 0.3s ease",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-            onClick={() => router.push("/contracts")}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
+          {[
+            {
+              icon: <FileTextOutlined />,
+              title: "合同管理",
+              desc: "全周期合同生命周期管理",
+              action: "进入系统",
+              path: "/contracts",
+            },
+            {
+              icon: <TeamOutlined />,
+              title: "客户管理",
+              desc: "客户信息与关系维护",
+              action: "查看列表",
+              path: "/clients",
+            },
+            {
+              icon: <ProjectOutlined />,
+              title: "项目管理",
+              desc: "项目进度与预算追踪",
+              action: "管理项目",
+              path: "/projects",
+            },
+            {
+              icon: <DollarOutlined />,
+              title: "回款管理",
+              desc: "财务记录与分析",
+              action: "查看详情",
+              path: "/payments",
+            },
+            {
+              icon: <ShoppingOutlined />,
+              title: "产品管理",
+              desc: "产品库维护",
+              action: "管理产品",
+              path: "/products",
+            },
+            {
+              icon: <DatabaseOutlined />,
+              title: "数据库管理员",
+              desc: "回收站与权限管理",
+              action: "进入管理",
+              path: "/admin/login",
+            },
+          ].map((item, index) => (
             <div
+              key={index}
               style={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(59, 130, 246, 0.1)",
-                borderRadius: "50%",
-              }}
-            />
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 12,
-                background: "#EFF6FF",
+                position: "relative",
+                background: "rgba(255, 255, 255, 0.85)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(229, 231, 235, 0.6)",
+                borderRadius: 16,
+                padding: "20px 24px",
+                cursor: "pointer",
+                transition: "all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.03)",
+                height: 120,
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#3B82F6",
-                fontSize: 24,
+                flexDirection: "column",
+                justifyContent: "space-between",
+                opacity: 0,
+                animation: `fadeInUp 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) ${
+                  0.6 + index * 0.1
+                }s forwards`,
+                transform: "translateY(1px)",
+              }}
+              onClick={(e) => {
+                e.currentTarget.style.transform = "translateY(3px)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 12px rgba(0, 0, 0, 0.04)";
+                setTimeout(() => {
+                  router.push(item.path);
+                }, 200);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-3px)";
+                e.currentTarget.style.background = "rgba(240, 242, 245, 0.9)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 12px rgba(0, 0, 0, 0.04)";
+                const icon = e.currentTarget.querySelector(
+                  ".nav-icon"
+                ) as HTMLElement;
+                if (icon) {
+                  icon.style.animation = "iconRotate 0.5s ease-in-out";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(1px)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.85)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 8px rgba(0, 0, 0, 0.03)";
+                const icon = e.currentTarget.querySelector(
+                  ".nav-icon"
+                ) as HTMLElement;
+                if (icon) {
+                  icon.style.animation = "";
+                }
               }}
             >
-              <FileTextOutlined />
-            </div>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: "#1E293B" }}>
-                合同管理
-              </h3>
-              <p
-                style={{
-                  fontSize: 14,
-                  color: "#64748B",
-                  marginTop: 4,
-                  marginBottom: 16,
-                }}
+              <div
+                style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
               >
-                全周期合同生命周期管理
-              </p>
+                <div
+                  className="nav-icon"
+                  style={{
+                    fontSize: 24,
+                    color: "#5E5E62",
+                    transition: "transform 0.3s ease",
+                  }}
+                >
+                  {item.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#1D1D1F",
+                      margin: 0,
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: "#757575",
+                      margin: "4px 0 0 0",
+                    }}
+                  >
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  color: "#3B82F6",
-                  fontSize: 14,
+                  color: "#6C2BD9",
+                  fontSize: 12,
                   fontWeight: 500,
+                  transition: "color 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "#5A23B0";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "#6C2BD9";
                 }}
               >
-                进入系统 <ArrowRightOutlined style={{ marginLeft: 8 }} />
+                {item.action}{" "}
+                <ArrowRightOutlined style={{ marginLeft: 4, fontSize: 12 }} />
               </div>
             </div>
-          </div>
-
-          {/* Clients */}
-          <div
-            className="glass-effect"
-            style={{
-              gridColumn: "span 1",
-              borderRadius: 16,
-              padding: 24,
-              cursor: "pointer",
-              position: "relative",
-              overflow: "hidden",
-              transition: "all 0.3s ease",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-            onClick={() => router.push("/clients")}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 12,
-                background: "#F0FDF4", // Green tint
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#10B981",
-                fontSize: 24,
-              }}
-            >
-              <TeamOutlined />
-            </div>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: "#1E293B" }}>
-                客户管理
-              </h3>
-              <p
-                style={{
-                  fontSize: 14,
-                  color: "#64748B",
-                  marginTop: 4,
-                  marginBottom: 16,
-                }}
-              >
-                客户信息与关系维护
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "#3B82F6",
-                  fontSize: 14,
-                  fontWeight: 500,
-                }}
-              >
-                查看列表 <ArrowRightOutlined style={{ marginLeft: 8 }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Projects */}
-          <div
-            className="glass-effect"
-            style={{
-              gridColumn: "span 1",
-              borderRadius: 16,
-              padding: 24,
-              cursor: "pointer",
-              position: "relative",
-              overflow: "hidden",
-              transition: "all 0.3s ease",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-            onClick={() => router.push("/projects")}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 12,
-                background: "#FFF7ED", // Orange tint
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#F97316",
-                fontSize: 24,
-              }}
-            >
-              <ProjectOutlined />
-            </div>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: "#1E293B" }}>
-                项目管理
-              </h3>
-              <p
-                style={{
-                  fontSize: 14,
-                  color: "#64748B",
-                  marginTop: 4,
-                  marginBottom: 16,
-                }}
-              >
-                项目进度与预算追踪
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "#3B82F6",
-                  fontSize: 14,
-                  fontWeight: 500,
-                }}
-              >
-                管理项目 <ArrowRightOutlined style={{ marginLeft: 8 }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Payments & Products (Smaller row or split) */}
-          <div
-            className="glass-effect"
-            style={{
-              borderRadius: 16,
-              padding: 24,
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-            }}
-            onClick={() => router.push("/payments")}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 10,
-                background: "#FEF2F2", // Red tint
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#EF4444",
-                fontSize: 20,
-              }}
-            >
-              <DollarOutlined />
-            </div>
-            <div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1E293B" }}>
-                回款管理
-              </h3>
-              <p style={{ fontSize: 13, color: "#64748B", margin: 0 }}>
-                财务记录与分析
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="glass-effect"
-            style={{
-              borderRadius: 16,
-              padding: 24,
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-            }}
-            onClick={() => router.push("/products")}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 10,
-                background: "#F5F3FF", // Purple tint
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#8B5CF6",
-                fontSize: 20,
-              }}
-            >
-              <ShoppingOutlined />
-            </div>
-            <div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1E293B" }}>
-                产品管理
-              </h3>
-              <p style={{ fontSize: 13, color: "#64748B", margin: 0 }}>
-                产品库维护
-              </p>
-            </div>
-          </div>
-
-          {/* Placeholder for future expansion */}
-          <div
-            style={{
-              borderRadius: 16,
-              border: "2px dashed #E2E8F0",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#94A3B8",
-              fontSize: 14,
-            }}
-          >
-            敬请期待
-          </div>
+          ))}
         </div>
       </div>
     </div>

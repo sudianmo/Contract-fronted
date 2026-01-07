@@ -10,36 +10,91 @@
 }
 
 body {
-  background-color: #F8FAFC; /* 全局浅灰背景 */
+  background: #1D1D1F; /* 苹果炭黑底色 */
+  /* 纯 CSS 黑白拼图纹理背景 */
+  background-image: 
+    repeating-linear-gradient(45deg, rgba(242, 242, 247, 0.08) 0px, rgba(242, 242, 247, 0.08) 20px, transparent 20px, transparent 40px),
+    repeating-linear-gradient(-45deg, rgba(242, 242, 247, 0.08) 0px, rgba(242, 242, 247, 0.08) 20px, transparent 20px, transparent 40px);
+  background-size: 80px 80px;
+  background-position: 0 0, 40px 0;
   color: #1E293B; /* 主文字色 */
-  font-family: "Microsoft Yahei", sans-serif; /* 适配中文的简约字体 */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft Yahei", sans-serif;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
+  position: relative;
+}
+
+/* XAUT极淡背景纹理 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 200px,
+    rgba(240, 240, 240, 0.05) 200px,
+    rgba(240, 240, 240, 0.05) 201px
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 200px,
+    rgba(240, 240, 240, 0.05) 200px,
+    rgba(240, 240, 240, 0.05) 201px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 全局字体层级 */
+h1, h2, h3 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+}
+
+p, span, div {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Microsoft Yahei", sans-serif;
+  font-weight: 400;
+}
+
+.text-auxiliary {
+  font-weight: 300;
 }
 
 /* 页面容器：合同管理核心模块外层 */
 .contract-container {
   width: 98%;
   margin: 16px auto;
-  background-color: #FFFFFF; /* 纯白模块背景 */
-  border-radius: var(--radius-base);
-  box-shadow: var(--shadow-light);
-  padding: 20px;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  padding: 16px;
 }
 
-/* 导航/侧边栏样式（高效简约版） */
+/* 导航/侧边栏样式（高效简约版） - 深色毛玻璃 */
 .sidebar {
-  background-color: #FFFFFF;
-  border-radius: var(--radius-base);
-  box-shadow: var(--shadow-light);
+  background: rgba(30, 30, 35, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(242, 242, 247, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   padding: 12px 0;
-  height: 100%;
-  width: 200px; /* Added fixed width for layout */
+  min-height: 100vh;
+  width: 280px;
   flex-shrink: 0;
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 10;
 }
 .sidebar.collapsed {
   width: 64px;
@@ -53,10 +108,12 @@ body {
   display: flex; /* Ensure alignment */
   align-items: center;
   gap: 12px;
-  color: #64748B; /* Default color */
+  color: #F2F2F7; /* 深色背景下的淡白文字 */
   text-decoration: none;
   white-space: nowrap;
   height: 44px;
+  opacity: 0;
+  animation: menuItemFadeIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
 }
 
 .sidebar.collapsed .menu-item {
@@ -73,12 +130,22 @@ body {
 
 /* 选中态：主强调色高亮 */
 .sidebar .menu-item.active {
-  background-color: #EFF6FF; /* 浅蓝背景 */
-  border-left-color: #3B82F6;
-  color: #3B82F6;
+  background-color: rgba(108, 43, 217, 0.15);
+  border-left: 3px solid #6C2BD9;
+  color: #6C2BD9;
+  padding-left: 17px;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 8px rgba(108, 43, 217, 0.5);
 }
 .sidebar .menu-item:hover {
-  background-color: #F1F5F9; /* hover浅灰背景 */
+  background-color: rgba(108, 43, 217, 0.08);
+  color: #F2F2F7;
+  transition: all 0.2s ease;
+}
+
+.sidebar .menu-item:hover .icon {
+  transform: translateX(2px);
+  transition: transform 0.2s ease;
 }
 
 /* Glassmorphism Effect */
@@ -106,37 +173,69 @@ body {
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* 表格样式（核心数据展示区） */
-.contract-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #FFFFFF;
-  border-radius: var(--radius-base);
-  overflow: hidden; /* 让表格圆角生效 */
+/* 表格样式（核心数据展示区） - 苹果风格 */
+.ant-table {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
 }
+
+.ant-table-wrapper {
+  border-radius: 16px;
+}
+
 /* 表头样式 */
-.contract-table thead th {
-  background-color: #F1F5F9; /* 浅灰表头 */
-  color: #1E293B;
-  padding: 12px 8px;
+.ant-table-thead > tr > th {
+  background-color: #F5F7F8 !important;
+  color: #1D1D1F !important;
+  padding: 16px 12px !important;
   text-align: left;
-  font-weight: 500;
-  border-bottom: 1px solid #E2E8F0;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  border-left: none !important;
+  border-right: none !important;
 }
+
 /* 表体样式 */
-.contract-table tbody td {
-  padding: 12px 8px;
-  border-bottom: 1px solid #E2E8F0;
-  color: #1E293B;
+.ant-table-tbody > tr {
+  height: 56px;
 }
+
+.ant-table-tbody > tr > td {
+  padding: 16px 12px !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  border-left: none !important;
+  border-right: none !important;
+  color: #1D1D1F;
+  font-size: 14px;
+}
+
 /* 行hover效果 */
-.contract-table tbody tr:hover {
-  background-color: #EFF6FF; /* 浅蓝hover态 */
-  transition: background-color 0.2s ease;
+.ant-table-tbody > tr:hover > td {
+  background-color: #F0F2F5 !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 }
-/* 次要文字：如备注、时间 */
-.contract-table .text-secondary {
-  color: #64748B;
+
+/* 行选中效果 */
+.ant-table-tbody > tr.ant-table-row-selected > td {
+  background-color: #E8EBF0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.apple-table-row:active {
+  background-color: #E8EBF0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+/* 移除表格外边框 */
+.ant-table-container {
+  border: none !important;
+}
+
+.ant-table-content > table {
+  border: none !important;
 }
 
 /* 按钮样式（高效简约） */
@@ -196,9 +295,154 @@ body {
   min-height: 100vh;
   padding: 16px;
   gap: 16px;
+  overflow: visible;
 }
 
 .main-content {
   flex: 1;
   /* overflow-y: auto; */
+}
+
+/* 侧边栏底部用户模块 */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid #E2E8F0;
+  margin-top: auto;
+  gap: 12px;
+}
+
+.sidebar.collapsed .sidebar-user {
+  padding: 16px 0;
+  justify-content: center;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #E0E4E8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 苹果风格动画定义 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes menuItemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes breatheShadow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  50% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@keyframes avatarRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes iconRotate {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+/* 为侧边栏菜单项添加延迟动画 */
+.sidebar .menu-item:nth-child(2) { animation-delay: 0s; }
+.sidebar .menu-item:nth-child(3) { animation-delay: 0.05s; }
+.sidebar .menu-item:nth-child(4) { animation-delay: 0.1s; }
+.sidebar .menu-item:nth-child(5) { animation-delay: 0.15s; }
+.sidebar .menu-item:nth-child(6) { animation-delay: 0.2s; }
+.sidebar .menu-item:nth-child(7) { animation-delay: 0.25s; }
+
+/* 头像旋转动画（仅一次） */
+.user-avatar {
+  animation: avatarRotate 1s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.5s forwards;
+}
+
+/* 侧边栏滑入动画 */
+@keyframes sidebarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Logo显示动画（模糊→清晰+拉伸） */
+@keyframes logoReveal {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scaleX(0.8);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scaleX(1);
+  }
+}
+
+/* 仪表盘插件淡入动画 */
+@keyframes widgetFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

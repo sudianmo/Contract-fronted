@@ -142,33 +142,33 @@ const ContractList: React.FC = () => {
       key: "status",
       width: 100,
       render: (status: string) => {
-         let className = "status-tag";
-         if (status === "Signed") className += " success";
-         else if (status === "Executing" || status === "Completed") className += " warning"; // Adjust logic if needed
-         
-         // Custom mapping based on user description:
-         // Signed: success (green)
-         // Executing: maybe blue or warning? User said "Executing" (Wait for audit?) -> warning
-         // Actually user said: "Signed" -> success, "Pending Audit" -> warning.
-         // Let's stick to the CSS classes provided.
-         
-         const statusStyle: React.CSSProperties = {};
-         if (status === "Signed") {
-             // success
-             return <span className="status-tag success">{statusMap[status] || status}</span>;
-         } else if (status === "Executing") {
-             // Use default or maybe a primary light color? 
-             // User didn't specify for Executing. I'll use a blue-ish custom one or warning.
-             // Let's use a custom inline style for blue if not defined in CSS.
-             return <span className="status-tag" style={{backgroundColor: '#EFF6FF', color: '#3B82F6'}}>{statusMap[status] || status}</span>;
-         } else if (status === "Completed") {
-             // Maybe gray or success?
-             return <span className="status-tag" style={{backgroundColor: '#F1F5F9', color: '#64748B'}}>{statusMap[status] || status}</span>;
-         } else if (status === "Terminated") {
-              return <span className="status-tag" style={{backgroundColor: '#FEF2F2', color: '#EF4444'}}>{statusMap[status] || status}</span>;
-         }
+        const statusStyles: Record<string, { bg: string; color: string }> = {
+          Signed: { bg: "#E8F5E9", color: "#34C759" },
+          Executing: { bg: "#E6F7FF", color: "#0071E3" },
+          Completed: { bg: "#F0F2F5", color: "#757575" },
+          Terminated: { bg: "#FEE2E2", color: "#FF3B30" },
+        };
 
-         return <span className={className}>{statusMap[status] || status}</span>;
+        const style = statusStyles[status] || {
+          bg: "#F5F7F8",
+          color: "#1D1D1F",
+        };
+
+        return (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "4px 12px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 500,
+              background: style.bg,
+              color: style.color,
+            }}
+          >
+            {statusMap[status] || status}
+          </span>
+        );
       },
     },
     {
@@ -177,23 +177,51 @@ const ContractList: React.FC = () => {
       width: 150,
       fixed: "right",
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            className="btn-secondary"
-            size="small"
-            icon={<EditOutlined />}
+        <Space size="middle">
+          <div
             onClick={() => handleEdit(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(0, 113, 227, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            编辑
-          </Button>
-          <Button
-            className="btn-danger"
-            size="small"
-            icon={<DeleteOutlined />}
+            <EditOutlined style={{ fontSize: 20, color: "#0071E3" }} />
+          </div>
+          <div
             onClick={() => handleDelete(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            删除
-          </Button>
+            <DeleteOutlined style={{ fontSize: 20, color: "#FF3B30" }} />
+          </div>
         </Space>
       ),
     },
@@ -210,9 +238,14 @@ const ContractList: React.FC = () => {
   const handleEdit = (record: Contract) => {
     setEditingContract(record);
     form.setFieldsValue({
-      ...record,
+      contractNo: record.contractNo,
+      contractName: record.contractName,
+      clientId: record.clientId,
+      amount: record.amount,
       signDate: record.signDate ? dayjs(record.signDate) : null,
       endDate: record.endDate ? dayjs(record.endDate) : null,
+      status: record.status,
+      remark: record.remark,
     });
     setModalVisible(true);
   };
@@ -280,20 +313,40 @@ const ContractList: React.FC = () => {
   };
 
   return (
-    <div className="contract-container">
-        <h1
-          style={{
-            marginBottom: 24,
-            fontSize: 24,
-            fontWeight: 600,
-            color: "#1E293B",
-          }}
-        >
-          合同管理系统
-        </h1>
+    <div
+      className="contract-container"
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 16,
+        border: "1px solid #E5E7EB",
+        padding: 16,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.03)",
+      }}
+    >
+      <h1
+        style={{
+          marginBottom: 24,
+          fontSize: 24,
+          fontWeight: 600,
+          color: "#1D1D1F",
+        }}
+      >
+        合同管理系统
+      </h1>
 
-        {/* 搜索和筛选区域 */}
-        <Space style={{ marginBottom: 16 }} size="middle">
+      {/* 搜索和筛选区域 - 毛玻璃效果 */}
+      <div
+        style={{
+          marginBottom: 16,
+          padding: 12,
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid rgba(229, 231, 235, 0.5)",
+          borderRadius: 12,
+        }}
+      >
+        <Space size="middle" wrap>
           <Search
             placeholder="搜索合同编号、名称"
             onSearch={handleSearch}
@@ -338,146 +391,174 @@ const ContractList: React.FC = () => {
               </Option>
             ))}
           </Select>
-          <Button onClick={handleReset} className="btn-secondary">重置</Button>
+          <Button
+            onClick={handleReset}
+            style={{
+              background: "#F5F7F8",
+              border: "1px solid #E5E7EB",
+              color: "#1D1D1F",
+              borderRadius: 8,
+            }}
+          >
+            重置
+          </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
-            className="btn-primary"
+            style={{
+              background: "#0071E3",
+              border: "none",
+              borderRadius: 8,
+              fontWeight: 500,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#0066D6";
+              e.currentTarget.style.transform = "scale(0.98)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#0071E3";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
             新增合同
           </Button>
         </Space>
+      </div>
 
-        {/* 表格 */}
-        <Table
-          className="contract-table"
-          columns={columns}
-          dataSource={contracts}
-          rowKey="id"
-          loading={loading}
-          scroll={{ x: 1200 }}
-          pagination={{
-            current: pageNum,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条`,
-            onChange: (page, size) => {
-              setPageNum(page);
-              setPageSize(size);
-            },
-          }}
-        />
+      {/* 表格 - 苹果风格 */}
+      <Table
+        columns={columns}
+        dataSource={contracts}
+        rowKey="id"
+        loading={loading}
+        scroll={{ x: 1200 }}
+        rowClassName={(record, index) => "apple-table-row"}
+        pagination={{
+          current: pageNum,
+          pageSize: pageSize,
+          total: total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
+        }}
+        style={{
+          marginTop: 16,
+        }}
+      />
 
-        {/* 新增/编辑弹窗 */}
-        <Modal
-          title={editingContract ? "编辑合同" : "新增合同"}
-          open={modalVisible}
-          onOk={handleSave}
-          onCancel={() => setModalVisible(false)}
-          width={800}
-          okText="保存"
-          cancelText="取消"
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="合同编号"
-              name="contractNo"
-              rules={[{ required: true, message: "请输入合同编号" }]}
+      {/* 新增/编辑弹窗 */}
+      <Modal
+        title={editingContract ? "编辑合同" : "新增合同"}
+        open={modalVisible}
+        onOk={handleSave}
+        onCancel={() => setModalVisible(false)}
+        width={800}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="合同编号"
+            name="contractNo"
+            rules={[{ required: true, message: "请输入合同编号" }]}
+          >
+            <Input placeholder="请输入合同编号" />
+          </Form.Item>
+
+          <Form.Item
+            label="合同名称"
+            name="contractName"
+            rules={[{ required: true, message: "请输入合同名称" }]}
+          >
+            <Input placeholder="请输入合同名称" />
+          </Form.Item>
+
+          <Form.Item
+            label="客户"
+            name="clientId"
+            rules={[{ required: true, message: "请选择客户" }]}
+          >
+            <Select
+              placeholder="请选择客户"
+              showSearch
+              filterOption={(input, option) =>
+                String(option?.children || "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
             >
-              <Input placeholder="请输入合同编号" />
-            </Form.Item>
+              {clients?.map((client) => (
+                <Option key={client.id} value={client.id!}>
+                  {client.clientName}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-            <Form.Item
-              label="合同名称"
-              name="contractName"
-              rules={[{ required: true, message: "请输入合同名称" }]}
-            >
-              <Input placeholder="请输入合同名称" />
-            </Form.Item>
+          <Form.Item
+            label="合同金额"
+            name="amount"
+            rules={[{ required: true, message: "请输入合同金额" }]}
+          >
+            <InputNumber
+              placeholder="请输入合同金额"
+              style={{ width: "100%" }}
+              min={0}
+              precision={2}
+              formatter={(value) =>
+                `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value?.replace(/¥\s?|(,*)/g, "") as any}
+            />
+          </Form.Item>
 
-            <Form.Item
-              label="客户"
-              name="clientId"
-              rules={[{ required: true, message: "请选择客户" }]}
-            >
-              <Select
-                placeholder="请选择客户"
-                showSearch
-                filterOption={(input, option) =>
-                  String(option?.children || "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
-                {clients?.map((client) => (
-                  <Option key={client.id} value={client.id!}>
-                    {client.clientName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+          <Form.Item
+            label="签订日期"
+            name="signDate"
+            rules={[{ required: true, message: "请选择签订日期" }]}
+          >
+            <DatePicker
+              style={{ width: "100%" }}
+              placeholder="请选择签订日期"
+            />
+          </Form.Item>
 
-            <Form.Item
-              label="合同金额"
-              name="amount"
-              rules={[{ required: true, message: "请输入合同金额" }]}
-            >
-              <InputNumber
-                placeholder="请输入合同金额"
-                style={{ width: "100%" }}
-                min={0}
-                precision={2}
-                formatter={(value) =>
-                  `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
-                parser={(value) => value?.replace(/¥\s?|(,*)/g, "") as any}
-              />
-            </Form.Item>
+          <Form.Item
+            label="结束日期"
+            name="endDate"
+            rules={[{ required: true, message: "请选择结束日期" }]}
+          >
+            <DatePicker
+              style={{ width: "100%" }}
+              placeholder="请选择结束日期"
+            />
+          </Form.Item>
 
-            <Form.Item
-              label="签订日期"
-              name="signDate"
-              rules={[{ required: true, message: "请选择签订日期" }]}
-            >
-              <DatePicker
-                style={{ width: "100%" }}
-                placeholder="请选择签订日期"
-              />
-            </Form.Item>
+          <Form.Item
+            label="状态"
+            name="status"
+            rules={[{ required: true, message: "请选择状态" }]}
+          >
+            <Select placeholder="请选择状态">
+              {statusOptions.map((s) => (
+                <Option key={s} value={s}>
+                  {statusMap[s]}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-            <Form.Item
-              label="结束日期"
-              name="endDate"
-              rules={[{ required: true, message: "请选择结束日期" }]}
-            >
-              <DatePicker
-                style={{ width: "100%" }}
-                placeholder="请选择结束日期"
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="状态"
-              name="status"
-              rules={[{ required: true, message: "请选择状态" }]}
-            >
-              <Select placeholder="请选择状态">
-                {statusOptions.map((s) => (
-                  <Option key={s} value={s}>
-                    {statusMap[s]}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item label="备注" name="remark">
-              <Input.TextArea rows={3} placeholder="请输入备注" />
-            </Form.Item>
-          </Form>
-        </Modal>
+          <Form.Item label="备注" name="remark">
+            <Input.TextArea rows={3} placeholder="请输入备注" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
