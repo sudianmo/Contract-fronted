@@ -18,6 +18,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   SearchOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -26,9 +27,10 @@ import {
   createContract,
   updateContract,
   deleteContract,
+  getContractFullInfo,
 } from "@/services/contractService";
 import { getClientList } from "@/services/clientService";
-import type { Contract, Client } from "@/types";
+import type { Contract, Client, ContractFullInfo } from "@/types";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -44,6 +46,10 @@ const ContractList: React.FC = () => {
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [clientId, setClientId] = useState<number | undefined>(undefined);
   const [modalVisible, setModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [contractDetail, setContractDetail] = useState<ContractFullInfo | null>(
+    null
+  );
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [form] = Form.useForm();
 
@@ -174,10 +180,32 @@ const ContractList: React.FC = () => {
     {
       title: "操作",
       key: "action",
-      width: 150,
+      width: 200,
       fixed: "right",
       render: (_, record) => (
         <Space size="middle">
+          <div
+            onClick={() => handleViewDetail(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(52, 199, 89, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          >
+            <EyeOutlined style={{ fontSize: 20, color: "#34C759" }} />
+          </div>
           <div
             onClick={() => handleEdit(record)}
             style={{
@@ -232,6 +260,17 @@ const ContractList: React.FC = () => {
     setEditingContract(null);
     form.resetFields();
     setModalVisible(true);
+  };
+
+  // 查看详情
+  const handleViewDetail = async (record: Contract) => {
+    try {
+      const detail = await getContractFullInfo(record.id!);
+      setContractDetail(detail);
+      setDetailModalVisible(true);
+    } catch (error) {
+      message.error("加载合同详情失败");
+    }
   };
 
   // 编辑合同
@@ -558,6 +597,284 @@ const ContractList: React.FC = () => {
             <Input.TextArea rows={3} placeholder="请输入备注" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 合同详情弹窗 */}
+      <Modal
+        title="合同详情"
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setDetailModalVisible(false)}>
+            关闭
+          </Button>,
+        ]}
+        width={800}
+      >
+        {contractDetail && (
+          <div style={{ padding: "16px 0" }}>
+            {/* 合同基本信息 */}
+            <div style={{ marginBottom: 24 }}>
+              <h3
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  marginBottom: 12,
+                  color: "#1D1D1F",
+                }}
+              >
+                合同基本信息
+              </h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "12px 24px",
+                }}
+              >
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    合同编号：
+                  </span>
+                  <span
+                    style={{ color: "#1D1D1F", fontSize: 14, fontWeight: 500 }}
+                  >
+                    {contractDetail.contractNumber}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    合同名称：
+                  </span>
+                  <span
+                    style={{ color: "#1D1D1F", fontSize: 14, fontWeight: 500 }}
+                  >
+                    {contractDetail.contractName}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    合同金额：
+                  </span>
+                  <span
+                    style={{ color: "#3B82F6", fontSize: 14, fontWeight: 600 }}
+                  >
+                    ¥{contractDetail.contractAmount.toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    签订日期：
+                  </span>
+                  <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                    {contractDetail.signingDate}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    到期日期：
+                  </span>
+                  <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                    {contractDetail.expiryDate}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    合同状态：
+                  </span>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: "#E8F5E9",
+                      color: "#34C759",
+                    }}
+                  >
+                    {statusMap[contractDetail.contractStatus] ||
+                      contractDetail.contractStatus}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 客户信息 */}
+            <div style={{ marginBottom: 24 }}>
+              <h3
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  marginBottom: 12,
+                  color: "#1D1D1F",
+                }}
+              >
+                客户信息
+              </h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "12px 24px",
+                }}
+              >
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    客户名称：
+                  </span>
+                  <span
+                    style={{ color: "#1D1D1F", fontSize: 14, fontWeight: 500 }}
+                  >
+                    {contractDetail.customerName}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    联系人：
+                  </span>
+                  <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                    {contractDetail.customerContact}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    联系电话：
+                  </span>
+                  <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                    {contractDetail.customerPhone}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 项目信息 */}
+            {contractDetail.projectName && (
+              <div style={{ marginBottom: 24 }}>
+                <h3
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    marginBottom: 12,
+                    color: "#1D1D1F",
+                  }}
+                >
+                  项目信息
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "12px 24px",
+                  }}
+                >
+                  <div>
+                    <span style={{ color: "#64748B", fontSize: 14 }}>
+                      项目名称：
+                    </span>
+                    <span
+                      style={{
+                        color: "#1D1D1F",
+                        fontSize: 14,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {contractDetail.projectName}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: "#64748B", fontSize: 14 }}>
+                      项目状态：
+                    </span>
+                    <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                      {contractDetail.projectStatus}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 负责人信息 */}
+            <div style={{ marginBottom: 24 }}>
+              <h3
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  marginBottom: 12,
+                  color: "#1D1D1F",
+                }}
+              >
+                负责人信息
+              </h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "12px 24px",
+                }}
+              >
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    合同管理员：
+                  </span>
+                  <span
+                    style={{ color: "#1D1D1F", fontSize: 14, fontWeight: 500 }}
+                  >
+                    {contractDetail.contractManager}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    所属部门：
+                  </span>
+                  <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                    {contractDetail.managerDepartment}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 审批信息 */}
+            {contractDetail.approvalStatus && (
+              <div>
+                <h3
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    marginBottom: 12,
+                    color: "#1D1D1F",
+                  }}
+                >
+                  审批信息
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "12px 24px",
+                  }}
+                >
+                  <div>
+                    <span style={{ color: "#64748B", fontSize: 14 }}>
+                      审批状态：
+                    </span>
+                    <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                      {contractDetail.approvalStatus}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: "#64748B", fontSize: 14 }}>
+                      审批日期：
+                    </span>
+                    <span style={{ color: "#1D1D1F", fontSize: 14 }}>
+                      {contractDetail.approvalDate}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );

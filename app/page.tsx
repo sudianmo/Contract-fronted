@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { message } from "antd";
 import {
   FileTextOutlined,
   TeamOutlined,
@@ -10,10 +11,19 @@ import {
   DollarOutlined,
   ArrowRightOutlined,
   DatabaseOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
+import {
+  getDepartmentPerformanceByYear,
+  getProductSalesStats,
+} from "@/services/statsService";
+import type { DepartmentPerformance, ProductSalesStats } from "@/types";
 
 export default function Home() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [deptStats, setDeptStats] = useState<DepartmentPerformance[]>([]);
+  const [productStats, setProductStats] = useState<ProductSalesStats[]>([]);
   const [animatedValues, setAnimatedValues] = useState({
     contracts: 0,
     amount: 0,
@@ -21,15 +31,51 @@ export default function Home() {
     projects: 0,
   });
 
-  // 数字滚动动画
+  // 加载统计数据
   useEffect(() => {
-    const targets = {
-      contracts: 128,
-      amount: 2450,
-      clients: 12,
-      projects: 8,
+    const loadStats = async () => {
+      try {
+        // 获取部门业绩统计（2024年）
+        const deptData = await getDepartmentPerformanceByYear(2024);
+        setDeptStats(deptData);
+
+        // 获取产品销售统计（Top5）
+        const productData = await getProductSalesStats({
+          pageNum: 1,
+          pageSize: 5,
+        });
+        setProductStats(productData.records || []);
+
+        // 计算汇总数据
+        const totalContracts = deptData.reduce(
+          (sum, dept) => sum + dept.contractCount,
+          0
+        );
+        const totalAmount = deptData.reduce(
+          (sum, dept) => sum + dept.totalContractAmount,
+          0
+        );
+
+        // 启动数字滚动动画
+        startAnimation({
+          contracts: totalContracts,
+          amount: Math.round(totalAmount / 10000), // 转换为万元
+          clients: 12, // 暂时保留硬编码
+          projects: 8, // 暂时保留硬编码
+        });
+      } catch (error) {
+        message.error("加载统计数据失败");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     };
 
+    loadStats();
+  }, []);
+
+  // 数字滚动动画
+  const startAnimation = (targets: typeof animatedValues) => {
     const duration = 1000; // 1秒
     const steps = 60;
     const interval = duration / steps;
@@ -52,9 +98,7 @@ export default function Home() {
         setAnimatedValues(targets);
       }
     }, interval);
-
-    return () => clearInterval(timer);
-  }, []);
+  };
 
   return (
     <div
@@ -146,8 +190,8 @@ export default function Home() {
           },
           {
             label: "总金额",
-            value: `¥${(animatedValues.amount / 1000).toFixed(1)}k`,
-            unit: "",
+            value: `¥${animatedValues.amount}`,
+            unit: "万",
             change: "+5.2%",
           },
           {
@@ -300,6 +344,13 @@ export default function Home() {
               path: "/contracts",
             },
             {
+              icon: <BarChartOutlined />,
+              title: "数据统计",
+              desc: "部门业绩与产品销售分析",
+              action: "查看报表",
+              path: "/statistics",
+            },
+            {
               icon: <TeamOutlined />,
               title: "客户管理",
               desc: "客户信息与关系维护",
@@ -326,13 +377,6 @@ export default function Home() {
               desc: "产品库维护",
               action: "管理产品",
               path: "/products",
-            },
-            {
-              icon: <DatabaseOutlined />,
-              title: "数据库管理员",
-              desc: "回收站与权限管理",
-              action: "进入管理",
-              path: "/admin/login",
             },
           ].map((item, index) => (
             <div
