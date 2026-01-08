@@ -271,8 +271,14 @@ const ContractList: React.FC = () => {
 
   // 保存合同
   const handleSave = async () => {
+    let values: any;
     try {
-      const values = await form.validateFields();
+      values = await form.validateFields();
+    } catch {
+      return;
+    }
+
+    try {
       const contractData = {
         ...values,
         signDate: values.signDate
@@ -294,7 +300,7 @@ const ContractList: React.FC = () => {
       setModalVisible(false);
       loadContracts();
     } catch (error) {
-      message.error("保存失败");
+      message.error((error as any)?.message || "保存失败");
     }
   };
 

@@ -42,7 +42,7 @@ const ClientList: React.FC = () => {
       setClients(result.records || []);
       setTotal(result.total);
     } catch (error) {
-      message.error("加载客户列表失败");
+      message.error((error as any)?.message || "加载客户列表失败");
       console.error(error);
     } finally {
       setLoading(false);
@@ -168,7 +168,7 @@ const ClientList: React.FC = () => {
           message.success("删除成功");
           loadClients();
         } catch (error) {
-          message.error("删除失败");
+          message.error((error as any)?.message || "删除失败");
         }
       },
     });
@@ -176,9 +176,14 @@ const ClientList: React.FC = () => {
 
   // 保存客户
   const handleSave = async () => {
+    let values: any;
     try {
-      const values = await form.validateFields();
+      values = await form.validateFields();
+    } catch {
+      return;
+    }
 
+    try {
       if (editingClient) {
         await updateClient(editingClient.id!, values);
         message.success("更新成功");
@@ -190,7 +195,7 @@ const ClientList: React.FC = () => {
       setModalVisible(false);
       loadClients();
     } catch (error) {
-      message.error("保存失败");
+      message.error((error as any)?.message || "保存失败");
     }
   };
 
