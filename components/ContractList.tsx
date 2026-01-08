@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Table,
   Button,
@@ -48,10 +48,18 @@ const ContractList: React.FC = () => {
   const [form] = Form.useForm();
 
   // 合同状态选项
-  const statusOptions = ["草稿", "生效", "已完成", "已终止"];
+  const statusOptions = ["Executing", "Signed", "Completed", "Terminated"];
+
+  // 状态映射
+  const statusMap: Record<string, string> = {
+    Executing: "执行中",
+    Signed: "已签订",
+    Completed: "已完成",
+    Terminated: "已终止",
+  };
 
   // 加载合同列表
-  const loadContracts = async () => {
+  const loadContracts = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getContractList({
@@ -61,7 +69,7 @@ const ContractList: React.FC = () => {
         status: status || undefined,
         clientId: clientId || undefined,
       });
-      setContracts(result.list);
+      setContracts(result.records || []);
       setTotal(result.total);
     } catch (error) {
       message.error("加载合同列表失败");
@@ -69,25 +77,25 @@ const ContractList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageNum, pageSize, keyword, status, clientId]);
 
   // 加载客户列表（用于下拉选择）
-  const loadClients = async () => {
+  const loadClients = useCallback(async () => {
     try {
       const result = await getClientList({ pageNum: 1, pageSize: 1000 });
-      setClients(result.list);
+      setClients(result.records || []);
     } catch (error) {
       console.error("加载客户列表失败", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadContracts();
-  }, [pageNum, pageSize, keyword, status, clientId]);
+  }, [loadContracts]);
 
   useEffect(() => {
     loadClients();
-  }, []);
+  }, [loadClients]);
 
   // 表格列定义
   const columns: ColumnsType<Contract> = [
@@ -123,12 +131,6 @@ const ContractList: React.FC = () => {
       width: 120,
     },
     {
-      title: "开始日期",
-      dataIndex: "startDate",
-      key: "startDate",
-      width: 120,
-    },
-    {
       title: "结束日期",
       dataIndex: "endDate",
       key: "endDate",
@@ -139,6 +141,35 @@ const ContractList: React.FC = () => {
       dataIndex: "status",
       key: "status",
       width: 100,
+      render: (status: string) => {
+        const statusStyles: Record<string, { bg: string; color: string }> = {
+          Signed: { bg: "#E8F5E9", color: "#34C759" },
+          Executing: { bg: "#E6F7FF", color: "#0071E3" },
+          Completed: { bg: "#F0F2F5", color: "#757575" },
+          Terminated: { bg: "#FEE2E2", color: "#FF3B30" },
+        };
+
+        const style = statusStyles[status] || {
+          bg: "#F5F7F8",
+          color: "#1D1D1F",
+        };
+
+        return (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "4px 12px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 500,
+              background: style.bg,
+              color: style.color,
+            }}
+          >
+            {statusMap[status] || status}
+          </span>
+        );
+      },
     },
     {
       title: "操作",
@@ -146,24 +177,51 @@ const ContractList: React.FC = () => {
       width: 150,
       fixed: "right",
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
+        <Space size="middle">
+          <div
             onClick={() => handleEdit(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(0, 113, 227, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            编辑
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
+            <EditOutlined style={{ fontSize: 20, color: "#0071E3" }} />
+          </div>
+          <div
             onClick={() => handleDelete(record)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              padding: "6px",
+              borderRadius: 6,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)";
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            删除
-          </Button>
+            <DeleteOutlined style={{ fontSize: 20, color: "#FF3B30" }} />
+          </div>
         </Space>
       ),
     },
@@ -180,10 +238,14 @@ const ContractList: React.FC = () => {
   const handleEdit = (record: Contract) => {
     setEditingContract(record);
     form.setFieldsValue({
-      ...record,
+      contractNo: record.contractNo,
+      contractName: record.contractName,
+      clientId: record.clientId,
+      amount: record.amount,
       signDate: record.signDate ? dayjs(record.signDate) : null,
-      startDate: record.startDate ? dayjs(record.startDate) : null,
       endDate: record.endDate ? dayjs(record.endDate) : null,
+      status: record.status,
+      remark: record.remark,
     });
     setModalVisible(true);
   };
@@ -209,15 +271,18 @@ const ContractList: React.FC = () => {
 
   // 保存合同
   const handleSave = async () => {
+    let values: any;
     try {
-      const values = await form.validateFields();
+      values = await form.validateFields();
+    } catch {
+      return;
+    }
+
+    try {
       const contractData = {
         ...values,
         signDate: values.signDate
           ? dayjs(values.signDate).format("YYYY-MM-DD")
-          : null,
-        startDate: values.startDate
-          ? dayjs(values.startDate).format("YYYY-MM-DD")
           : null,
         endDate: values.endDate
           ? dayjs(values.endDate).format("YYYY-MM-DD")
@@ -235,7 +300,7 @@ const ContractList: React.FC = () => {
       setModalVisible(false);
       loadContracts();
     } catch (error) {
-      message.error("保存失败");
+      message.error((error as any)?.message || "保存失败");
     }
   };
 
@@ -254,68 +319,128 @@ const ContractList: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 24 }}>合同管理</h1>
+    <div
+      className="contract-container"
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 16,
+        border: "1px solid #E5E7EB",
+        padding: 16,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.03)",
+      }}
+    >
+      <h1
+        style={{
+          marginBottom: 24,
+          fontSize: 24,
+          fontWeight: 600,
+          color: "#1D1D1F",
+        }}
+      >
+        合同管理系统
+      </h1>
 
-      {/* 搜索和筛选区域 */}
-      <Space style={{ marginBottom: 16 }} size="middle">
-        <Search
-          placeholder="搜索合同编号、名称"
-          onSearch={handleSearch}
-          style={{ width: 250 }}
-          enterButton={<SearchOutlined />}
-        />
-        <Select
-          placeholder="选择状态"
-          style={{ width: 120 }}
-          allowClear
-          value={status}
-          onChange={(value) => {
-            setStatus(value);
-            setPageNum(1);
-          }}
-        >
-          {statusOptions.map((s) => (
-            <Option key={s} value={s}>
-              {s}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          placeholder="选择客户"
-          style={{ width: 200 }}
-          allowClear
-          showSearch
-          filterOption={(input, option) =>
-            (option?.children as string)
-              .toLowerCase()
-              .includes(input.toLowerCase())
-          }
-          value={clientId}
-          onChange={(value) => {
-            setClientId(value);
-            setPageNum(1);
-          }}
-        >
-          {clients.map((client) => (
-            <Option key={client.id} value={client.id!}>
-              {client.clientName}
-            </Option>
-          ))}
-        </Select>
-        <Button onClick={handleReset}>重置</Button>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          新增合同
-        </Button>
-      </Space>
+      {/* 搜索和筛选区域 - 毛玻璃效果 */}
+      <div
+        style={{
+          marginBottom: 16,
+          padding: 12,
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid rgba(229, 231, 235, 0.5)",
+          borderRadius: 12,
+        }}
+      >
+        <Space size="middle" wrap>
+          <Search
+            placeholder="搜索合同编号、名称"
+            onSearch={handleSearch}
+            style={{ width: 250 }}
+            allowClear
+          />
+          <Select
+            placeholder="选择状态"
+            style={{ width: 120 }}
+            allowClear
+            value={status}
+            onChange={(value) => {
+              setStatus(value);
+              setPageNum(1);
+            }}
+          >
+            {statusOptions.map((s) => (
+              <Option key={s} value={s}>
+                {statusMap[s]}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="选择客户"
+            style={{ width: 200 }}
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              String(option?.children || "")
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+            value={clientId}
+            onChange={(value) => {
+              setClientId(value);
+              setPageNum(1);
+            }}
+          >
+            {clients?.map((client) => (
+              <Option key={client.id} value={client.id!}>
+                {client.clientName}
+              </Option>
+            ))}
+          </Select>
+          <Button
+            onClick={handleReset}
+            style={{
+              background: "#F5F7F8",
+              border: "1px solid #E5E7EB",
+              color: "#1D1D1F",
+              borderRadius: 8,
+            }}
+          >
+            重置
+          </Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            style={{
+              background: "#0071E3",
+              border: "none",
+              borderRadius: 8,
+              fontWeight: 500,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#0066D6";
+              e.currentTarget.style.transform = "scale(0.98)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#0071E3";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          >
+            新增合同
+          </Button>
+        </Space>
+      </div>
 
-      {/* 表格 */}
+      {/* 表格 - 苹果风格 */}
       <Table
         columns={columns}
         dataSource={contracts}
         rowKey="id"
         loading={loading}
         scroll={{ x: 1200 }}
+        rowClassName={(record, index) => "apple-table-row"}
         pagination={{
           current: pageNum,
           pageSize: pageSize,
@@ -327,6 +452,9 @@ const ContractList: React.FC = () => {
             setPageNum(page);
             setPageSize(size);
           },
+        }}
+        style={{
+          marginTop: 16,
         }}
       />
 
@@ -366,12 +494,12 @@ const ContractList: React.FC = () => {
               placeholder="请选择客户"
               showSearch
               filterOption={(input, option) =>
-                (option?.children as string)
+                String(option?.children || "")
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
             >
-              {clients.map((client) => (
+              {clients?.map((client) => (
                 <Option key={client.id} value={client.id!}>
                   {client.clientName}
                 </Option>
@@ -392,7 +520,7 @@ const ContractList: React.FC = () => {
               formatter={(value) =>
                 `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
-              parser={(value) => value!.replace(/¥\s?|(,*)/g, "")}
+              parser={(value) => value?.replace(/¥\s?|(,*)/g, "") as any}
             />
           </Form.Item>
 
@@ -404,17 +532,6 @@ const ContractList: React.FC = () => {
             <DatePicker
               style={{ width: "100%" }}
               placeholder="请选择签订日期"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="开始日期"
-            name="startDate"
-            rules={[{ required: true, message: "请选择开始日期" }]}
-          >
-            <DatePicker
-              style={{ width: "100%" }}
-              placeholder="请选择开始日期"
             />
           </Form.Item>
 
@@ -437,7 +554,7 @@ const ContractList: React.FC = () => {
             <Select placeholder="请选择状态">
               {statusOptions.map((s) => (
                 <Option key={s} value={s}>
-                  {s}
+                  {statusMap[s]}
                 </Option>
               ))}
             </Select>

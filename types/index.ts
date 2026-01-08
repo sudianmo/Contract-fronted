@@ -7,7 +7,6 @@ export interface Contract {
   clientName?: string;
   amount: number;
   signDate: string;
-  startDate: string;
   endDate: string;
   status: string;
   remark?: string;
@@ -36,11 +35,11 @@ export interface PageParams {
 
 // 分页响应
 export interface PageResult<T> {
-  list: T[];
+  records: T[];
   total: number;
-  pageNum: number;
-  pageSize: number;
-  pages: number;
+  pageNum?: number;
+  pageSize?: number;
+  pages?: number;
 }
 
 // 合同查询参数
@@ -53,4 +52,45 @@ export interface ContractQueryParams extends PageParams {
 // 客户查询参数
 export interface ClientQueryParams extends PageParams {
   keyword?: string;
+}
+
+// 产品类型定义
+export interface Product {
+  id?: number;
+  productName: string;
+  specification?: string;
+  unitPrice: number;
+  stockQuantity: number;
+  category?: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+// 项目类型定义
+export interface Project {
+  id?: number;
+  projectName: string;
+  customerId: number;
+  customerName?: string;
+  startDate: string;
+  endDate: string;
+  budget: number;
+  status: string;
+  description?: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+// 支付类型定义
+export interface Payment {
+  id?: number;
+  contractId: number;
+  contractName?: string;
+  paymentAmount: number;
+  paymentDate: string;
+  paymentMethod?: string;
+  paymentStatus: string;
+  remarks?: string;
+  createTime?: string;
+  updateTime?: string;
 }

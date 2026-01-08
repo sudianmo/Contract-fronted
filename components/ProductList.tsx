@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Table, Button, Input, Space, Modal, Form, message } from "antd";
+import {
+  Table,
+  Button,
+  Input,
+  Space,
+  Modal,
+  Form,
+  message,
+  InputNumber,
+  DatePicker,
+  Select,
+} from "antd";
 import {
   PlusOutlined,
   EditOutlined,
@@ -10,39 +21,39 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import {
-  getClientList,
-  createClient,
-  updateClient,
-  deleteClient,
-} from "@/services/clientService";
-import type { Client } from "@/types";
+  getProductList,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "@/services/productService";
+import type { Product } from "@/types";
 
 const { Search } = Input;
 
-const ClientList: React.FC = () => {
+const ProductList: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [clients, setClients] = useState<Client[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [pageNum, setPageNum] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [keyword, setKeyword] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form] = Form.useForm();
 
-  // 加载客户列表
-  const loadClients = useCallback(async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await getClientList({
+      const result: any = await getProductList({
         pageNum,
         pageSize,
         keyword: keyword || undefined,
       });
-      setClients(result.records || []);
-      setTotal(result.total);
+      console.log("产品数据:", result);
+      setProducts(result.records || []);
+      setTotal(result.total || 0);
     } catch (error) {
-      message.error((error as any)?.message || "加载客户列表失败");
+      message.error("加载产品列表失败");
       console.error(error);
     } finally {
       setLoading(false);
@@ -50,40 +61,40 @@ const ClientList: React.FC = () => {
   }, [pageNum, pageSize, keyword]);
 
   useEffect(() => {
-    loadClients();
-  }, [loadClients]);
+    loadProducts();
+  }, [loadProducts]);
 
-  // 表格列定义
-  const columns: ColumnsType<Client> = [
+  const columns: ColumnsType<Product> = [
     {
-      title: "客户名称",
-      dataIndex: "clientName",
-      key: "clientName",
+      title: "产品名称",
+      dataIndex: "productName",
+      key: "productName",
       width: 200,
     },
     {
-      title: "联系人",
-      dataIndex: "contactPerson",
-      key: "contactPerson",
-      width: 120,
-    },
-    {
-      title: "联系电话",
-      dataIndex: "contactPhone",
-      key: "contactPhone",
+      title: "规格",
+      dataIndex: "specification",
+      key: "specification",
       width: 150,
     },
     {
-      title: "联系邮箱",
-      dataIndex: "contactEmail",
-      key: "contactEmail",
-      width: 200,
+      title: "单价",
+      dataIndex: "unitPrice",
+      key: "unitPrice",
+      width: 120,
+      render: (value) => `¥${value}`,
     },
     {
-      title: "地址",
-      dataIndex: "address",
-      key: "address",
-      width: 250,
+      title: "库存数量",
+      dataIndex: "stockQuantity",
+      key: "stockQuantity",
+      width: 120,
+    },
+    {
+      title: "分类",
+      dataIndex: "category",
+      key: "category",
+      width: 150,
     },
     {
       title: "操作",
@@ -141,71 +152,60 @@ const ClientList: React.FC = () => {
     },
   ];
 
-  // 新增客户
   const handleAdd = () => {
-    setEditingClient(null);
+    setEditingProduct(null);
     form.resetFields();
     setModalVisible(true);
   };
 
-  // 编辑客户
-  const handleEdit = (record: Client) => {
-    setEditingClient(record);
+  const handleEdit = (record: Product) => {
+    setEditingProduct(record);
     form.setFieldsValue(record);
     setModalVisible(true);
   };
 
-  // 删除客户
-  const handleDelete = (record: Client) => {
+  const handleDelete = (record: Product) => {
     Modal.confirm({
       title: "确认删除",
-      content: `确定要删除客户"${record.clientName}"吗？`,
+      content: `确定要删除产品"${record.productName}"吗？`,
       okText: "确定",
       cancelText: "取消",
       onOk: async () => {
         try {
-          await deleteClient(record.id!);
+          await deleteProduct(record.id!);
           message.success("删除成功");
-          loadClients();
+          loadProducts();
         } catch (error) {
-          message.error((error as any)?.message || "删除失败");
+          message.error("删除失败");
         }
       },
     });
   };
 
-  // 保存客户
   const handleSave = async () => {
-    let values: any;
     try {
-      values = await form.validateFields();
-    } catch {
-      return;
-    }
+      const values = await form.validateFields();
 
-    try {
-      if (editingClient) {
-        await updateClient(editingClient.id!, values);
+      if (editingProduct) {
+        await updateProduct(editingProduct.id!, values);
         message.success("更新成功");
       } else {
-        await createClient(values);
+        await createProduct(values);
         message.success("创建成功");
       }
 
       setModalVisible(false);
-      loadClients();
+      loadProducts();
     } catch (error) {
-      message.error((error as any)?.message || "保存失败");
+      message.error("保存失败");
     }
   };
 
-  // 搜索
   const handleSearch = (value: string) => {
     setKeyword(value);
     setPageNum(1);
   };
 
-  // 重置筛选
   const handleReset = () => {
     setKeyword("");
     setPageNum(1);
@@ -221,15 +221,14 @@ const ClientList: React.FC = () => {
           color: "#1E293B",
         }}
       >
-        客户管理
+        产品管理
       </h1>
 
-      {/* 搜索区域 */}
-      <Space style={{ marginBottom: 16 }} size="middle">
+      <Space style={{ marginBottom: 16 }}>
         <Search
-          placeholder="搜索客户名称、联系人"
+          placeholder="搜索产品名称或分类"
           onSearch={handleSearch}
-          style={{ width: 300 }}
+          style={{ width: 250 }}
           enterButton={<SearchOutlined />}
           allowClear
         />
@@ -242,15 +241,14 @@ const ClientList: React.FC = () => {
           onClick={handleAdd}
           className="btn-primary"
         >
-          新增客户
+          新增产品
         </Button>
       </Space>
 
-      {/* 表格 */}
       <Table
         className="contract-table"
         columns={columns}
-        dataSource={clients}
+        dataSource={products}
         rowKey="id"
         loading={loading}
         scroll={{ x: 1000 }}
@@ -268,58 +266,62 @@ const ClientList: React.FC = () => {
         }}
       />
 
-      {/* 新增/编辑弹窗 */}
       <Modal
-        title={editingClient ? "编辑客户" : "新增客户"}
+        title={editingProduct ? "编辑产品" : "新增产品"}
         open={modalVisible}
         onOk={handleSave}
         onCancel={() => setModalVisible(false)}
-        width={700}
         okText="保存"
         cancelText="取消"
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="客户名称"
-            name="clientName"
-            rules={[{ required: true, message: "请输入客户名称" }]}
+            label="产品名称"
+            name="productName"
+            rules={[{ required: true, message: "请输入产品名称" }]}
           >
-            <Input placeholder="请输入客户名称" />
+            <Input placeholder="请输入产品名称" />
           </Form.Item>
-
           <Form.Item
-            label="联系人"
-            name="contactPerson"
-            rules={[{ required: true, message: "请输入联系人" }]}
+            label="规格"
+            name="specification"
+            rules={[{ required: true, message: "请输入规格" }]}
           >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder="请输入规格" />
           </Form.Item>
-
           <Form.Item
-            label="联系电话"
-            name="contactPhone"
-            rules={[
-              { required: true, message: "请输入联系电话" },
-              { pattern: /^1[3-9]\d{9}$/, message: "请输入有效的手机号码" },
-            ]}
+            label="单价"
+            name="unitPrice"
+            rules={[{ required: true, message: "请输入单价" }]}
           >
-            <Input placeholder="请输入联系电话" />
+            <InputNumber
+              style={{ width: "100%" }}
+              min={0}
+              precision={2}
+              placeholder="请输入单价"
+            />
           </Form.Item>
-
           <Form.Item
-            label="联系邮箱"
-            name="contactEmail"
-            rules={[{ type: "email", message: "请输入有效的邮箱地址" }]}
+            label="库存数量"
+            name="stockQuantity"
+            rules={[{ required: true, message: "请输入库存数量" }]}
           >
-            <Input placeholder="请输入联系邮箱" />
+            <InputNumber
+              style={{ width: "100%" }}
+              min={0}
+              precision={0}
+              placeholder="请输入库存数量"
+            />
           </Form.Item>
-
-          <Form.Item label="地址" name="address">
-            <Input placeholder="请输入地址" />
+          <Form.Item
+            label="分类"
+            name="category"
+            rules={[{ required: true, message: "请输入分类" }]}
+          >
+            <Input placeholder="请输入分类" />
           </Form.Item>
-
-          <Form.Item label="备注" name="remark">
-            <Input.TextArea rows={3} placeholder="请输入备注" />
+          <Form.Item label="描述" name="description">
+            <Input.TextArea />
           </Form.Item>
         </Form>
       </Modal>
@@ -327,4 +329,4 @@ const ClientList: React.FC = () => {
   );
 };
 
-export default ClientList;
+export default ProductList;

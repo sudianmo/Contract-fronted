@@ -32,8 +32,10 @@ request.interceptors.response.use(
     return res.data;
   },
   (error) => {
-    console.error('请求异常:', error.message);
-    return Promise.reject(error);
+    const backendMsg = error?.response?.data?.message;
+    const msg = backendMsg || error?.message || '请求异常';
+    console.error('请求异常:', msg);
+    return Promise.reject(new Error(msg));
   }
 );
 
