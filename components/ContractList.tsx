@@ -54,7 +54,7 @@ const ContractList: React.FC = () => {
   const [form] = Form.useForm();
 
   // 合同状态选项
-  const statusOptions = ["Executing", "Signed", "Completed", "Terminated"];
+  const statusOptions = ["Executing", "Signed", "Completed", "Terminated", "Pending"];
 
   // 状态映射
   const statusMap: Record<string, string> = {
@@ -62,6 +62,16 @@ const ContractList: React.FC = () => {
     Signed: "已签订",
     Completed: "已完成",
     Terminated: "已终止",
+    Pending: "待处理",  // 新增
+  };
+
+  // 项目状态映射
+  const projectStatusMap: Record<string, string> = {
+    Planning: "规划中",
+    "In Progress": "进行中",
+    Completed: "已完成",
+    Suspended: "已暂停",
+    Pending: "待处理",
   };
 
   // 加载合同列表
@@ -153,6 +163,7 @@ const ContractList: React.FC = () => {
           Executing: { bg: "#E6F7FF", color: "#0071E3" },
           Completed: { bg: "#F0F2F5", color: "#757575" },
           Terminated: { bg: "#FEE2E2", color: "#FF3B30" },
+          Pending: { bg: "#FFF4E6", color: "#FF9500" },  // 新增：橙色
         };
 
         const style = statusStyles[status] || {
@@ -793,7 +804,7 @@ const ContractList: React.FC = () => {
                       项目状态：
                     </span>
                     <span style={{ color: "#1D1D1F", fontSize: 14 }}>
-                      {contractDetail.projectStatus}
+                      {contractDetail.projectStatus ? (projectStatusMap[contractDetail.projectStatus] || contractDetail.projectStatus) : '-'}
                     </span>
                   </div>
                 </div>

@@ -113,8 +113,8 @@ export interface ContractFullInfo {
   projectStatus?: string;
   contractManager: string;
   managerDepartment: string;
-  approvalStatus?: string;
-  approvalDate?: string;
+  approvalStatus?: string | null; // 已废弃：Approvals表已删除
+  approvalDate?: string | null; // 已废弃：Approvals表已删除
 }
 
 // 部门业绩统计
@@ -135,33 +135,20 @@ export interface ProductSalesStats {
   standardPrice: number;
   totalSalesQuantity: number;
   totalSalesAmount: number;
-  supplierName: string;
-  supplyPrice: number;
+  supplierName: string | null; // 已废弃：Suppliers表已删除
+  supplyPrice: number | null; // 已废弃：Suppliers表已删除
   grossProfit: number;
 }
 
-// 项目任务进度
+// 项目任务进度（视图已简化）
 export interface ProjectTaskProgress {
+  taskId: number;
   projectId: number;
   projectName: string;
-  customerId: number;
-  customerName: string;
-  budget: number;
-  projectStatus: string;
-  projectStartDate: string;
-  projectEndDate: string;
-  taskId: number;
   taskName: string;
-  taskDescription?: string;
-  taskStartDate: string;
-  taskEndDate: string;
+  taskAssignee: string;
   taskStatus: string;
   completionRate: number;
-  taskAssignee: string;
-  assigneeDepartment: string;
-  contractNumber: string;
-  contractName: string;
-  contractAmount: number;
 }
 
 // 用户类型定义

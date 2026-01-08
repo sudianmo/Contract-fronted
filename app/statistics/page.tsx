@@ -21,6 +21,19 @@ import type {
 
 const { TabPane } = Tabs;
 
+// 任务状态映射（英文转中文）
+const taskStatusMap: { [key: string]: string } = {
+  "Completed": "已完成",
+  "In Progress": "进行中",
+  "To Do": "未开始",
+  "Pending": "未开始",
+};
+
+// 获取中文状态
+const getChineseStatus = (status: string): string => {
+  return taskStatusMap[status] || status;
+};
+
 const StatisticsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [deptStats, setDeptStats] = useState<DepartmentPerformance[]>([]);
@@ -840,14 +853,14 @@ const StatisticsPage: React.FC = () => {
                     {
                       label: "已完成",
                       count: projectStats.filter(
-                        (t) => t.taskStatus === "已完成"
+                        (t) => t.taskStatus === "Completed"
                       ).length,
                       color: "#34C759",
                     },
                     {
                       label: "进行中",
                       count: projectStats.filter(
-                        (t) => t.taskStatus === "进行中"
+                        (t) => t.taskStatus === "In Progress"
                       ).length,
                       color: "#3B82F6",
                     },
@@ -855,19 +868,19 @@ const StatisticsPage: React.FC = () => {
                       label: "未开始",
                       count: projectStats.filter(
                         (t) =>
-                          t.taskStatus !== "已完成" && t.taskStatus !== "进行中"
+                          t.taskStatus !== "Completed" && t.taskStatus !== "In Progress"
                       ).length,
                       color: "#94A3B8",
                     },
                   ].map((item, idx) => {
                     const maxCount = Math.max(
-                      projectStats.filter((t) => t.taskStatus === "已完成")
+                      projectStats.filter((t) => t.taskStatus === "Completed")
                         .length,
-                      projectStats.filter((t) => t.taskStatus === "进行中")
+                      projectStats.filter((t) => t.taskStatus === "In Progress")
                         .length,
                       projectStats.filter(
                         (t) =>
-                          t.taskStatus !== "已完成" && t.taskStatus !== "进行中"
+                          t.taskStatus !== "Completed" && t.taskStatus !== "In Progress"
                       ).length,
                       1
                     );
@@ -956,10 +969,11 @@ const StatisticsPage: React.FC = () => {
                         (b.completionRate || 0) - (a.completionRate || 0)
                     )
                     .map((task, index) => {
+                      const chineseStatus = getChineseStatus(task.taskStatus);
                       const statusColor =
-                        task.taskStatus === "已完成"
+                        task.taskStatus === "Completed"
                           ? "#34C759"
-                          : task.taskStatus === "进行中"
+                          : task.taskStatus === "In Progress"
                           ? "#3B82F6"
                           : "#94A3B8";
                       return (
@@ -996,7 +1010,7 @@ const StatisticsPage: React.FC = () => {
                               <span
                                 style={{ color: statusColor, fontWeight: 500 }}
                               >
-                                {task.taskStatus}
+                                {chineseStatus}
                               </span>
                               )
                             </span>
@@ -1035,6 +1049,7 @@ const StatisticsPage: React.FC = () => {
                               </span>
                             </div>
                           </div>
+                          {/* 备注：以下字段已从后端视图中删除，暂时隐藏
                           <div
                             style={{
                               fontSize: 11,
@@ -1046,6 +1061,7 @@ const StatisticsPage: React.FC = () => {
                             {task.customerName} | 预算: ¥
                             {task.budget.toLocaleString()}
                           </div>
+                          */}
                         </div>
                       );
                     })}

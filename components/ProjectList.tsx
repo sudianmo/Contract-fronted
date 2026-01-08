@@ -79,9 +79,10 @@ const ProjectList: React.FC = () => {
 
   const statusMap: Record<string, string> = {
     Planning: "规划中",
-    InProgress: "进行中",
+    "In Progress": "进行中",  // 注意：数据库中是有空格的
     Completed: "已完成",
     Suspended: "已暂停",
+    Pending: "待处理",  // 兼容处理
   };
 
   const columns: ColumnsType<Project> = [
@@ -124,7 +125,7 @@ const ProjectList: React.FC = () => {
       render: (value) => {
         let className = "status-tag";
         if (value === "Completed") className += " success";
-        else if (value === "InProgress") className += " warning";
+        else if (value === "In Progress" || value === "InProgress") className += " warning";  // 兼容两种格式
         else if (value === "Suspended") className += " danger"; // or inline
 
         if (value === "Suspended") {
@@ -389,9 +390,10 @@ const ProjectList: React.FC = () => {
           >
             <Select placeholder="请选择状态">
               <Option value="Planning">规划中</Option>
-              <Option value="InProgress">进行中</Option>
+              <Option value="In Progress">进行中</Option>
               <Option value="Completed">已完成</Option>
               <Option value="Suspended">已暂停</Option>
+              <Option value="Pending">待处理</Option>
             </Select>
           </Form.Item>
           <Form.Item label="描述" name="description">
