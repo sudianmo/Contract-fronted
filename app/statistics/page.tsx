@@ -43,6 +43,15 @@ const StatisticsPage: React.FC = () => {
       setDeptStats(deptData);
       setProductStats(productData.records || []);
       setProjectStats(projectData.records || []);
+
+      // 调试：输出任务状态
+      console.log("项目任务状态统计：", {
+        总数: projectData.records?.length || 0,
+        状态分布: projectData.records?.reduce((acc: any, task: any) => {
+          acc[task.taskStatus] = (acc[task.taskStatus] || 0) + 1;
+          return acc;
+        }, {}),
+      });
     } catch (error) {
       message.error("加载统计数据失败");
       console.error(error);
@@ -74,7 +83,7 @@ const StatisticsPage: React.FC = () => {
           style={{
             fontSize: 28,
             fontWeight: 700,
-            color: "#1D1D1F",
+            color: "#FFFFFF",
             margin: 0,
             display: "flex",
             alignItems: "center",
@@ -84,7 +93,7 @@ const StatisticsPage: React.FC = () => {
           <BarChartOutlined style={{ color: "#3B82F6" }} />
           数据统计分析
         </h1>
-        <p style={{ color: "#64748B", fontSize: 14, margin: "8px 0 0 0" }}>
+        <p style={{ color: "#E5E7EB", fontSize: 14, margin: "8px 0 0 0" }}>
           2024年度业绩概览与产品销售分析
         </p>
       </div>
