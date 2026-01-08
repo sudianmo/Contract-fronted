@@ -1,20 +1,36 @@
-import type { Metadata } from "next";
+"use client";
+
 import { ConfigProvider } from "antd";
 import zhCN from "antd/locale/zh_CN";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import ConnectionStatus from "@/components/ConnectionStatus";
 import Sidebar from "@/components/Sidebar";
+import { checkAuth } from "@/services/authService";
 import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "合同管理系统",
-  description: "合同和客户管理系统",
-};
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // 路由守卫：检查登录状态
+  useEffect(() => {
+    const whiteList = ["/login", "/admin/login"];
+    if (!whiteList.includes(pathname)) {
+      const user = checkAuth();
+      if (!user) {
+        router.replace("/login");
+      }
+    }
+  }, [pathname, router]);
+
+  // 登录页不显示Sidebar
+  const isLoginPage = pathname === "/login" || pathname === "/admin/login";
+
   return (
     <html lang="zh-CN">
       <head>
@@ -46,10 +62,14 @@ export default function RootLayout({
             },
           }}
         >
-          <div className="app-layout">
-            <Sidebar />
-            <div className="main-content">{children}</div>
-          </div>
+          {isLoginPage ? (
+            <div>{children}</div>
+          ) : (
+            <div className="app-layout">
+              <Sidebar />
+              <div className="main-content">{children}</div>
+            </div>
+          )}
           <ConnectionStatus />
         </ConfigProvider>
       </body>

@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import type { Contract, ContractQueryParams, PageResult } from '@/types';
+import type { Contract, ContractQueryParams, PageResult, ContractFullInfo } from '@/types';
 
 // 获取合同列表
 export const getContractList = (params: ContractQueryParams) => {
@@ -29,4 +29,9 @@ export const patchContract = (id: number, data: Partial<Contract>) => {
 // 删除合同
 export const deleteContract = (id: number) => {
   return request.delete<any, void>(`/api/contracts/${id}`);
+};
+
+// 获取合同全量信息（视图）
+export const getContractFullInfo = (id: number) => {
+  return request.get<any, ContractFullInfo>(`/api/contracts/full/${id}`);
 };
