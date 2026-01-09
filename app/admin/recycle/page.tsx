@@ -14,30 +14,18 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 
-// 封装带Token的请求
-const adminRequest = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem("adminToken");
-
-  if (!token) {
-    message.error("未登录，请先登录");
-    window.location.href = "/admin/login";
-    throw new Error("未授权");
-  }
-
+// 封装普通请求（不需要Admin-Token）
+const request = async (url: string, options: RequestInit = {}) => {
   const response = await fetch(`http://localhost:8080${url}`, {
     ...options,
     headers: {
       ...options.headers,
-      "Admin-Token": token,
+      "Content-Type": "application/json",
     },
   });
 
-  if (response.status === 401 || response.status === 403) {
-    message.error("登录已过期，请重新登录");
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUsername");
-    window.location.href = "/admin/login";
-    throw new Error("未授权");
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
 
   return response.json();
@@ -64,22 +52,23 @@ export default function RecycleBin() {
     paymentCount: 0,
   });
 
-  // 检查登录状态
+  // 检查管理员权限
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) {
-      message.warning("请先登录");
-      router.push("/admin/login");
-    } else {
-      loadStats();
-      loadAllDeletedData();
+      message.warning("请通过侧边栏的管理员页面入口访问");
+      // 返回上一页，而不是首页
+      router.back();
+      return;
     }
-  }, []);
+    loadStats();
+    loadAllDeletedData();
+  }, [router]);
 
   // 加载统计信息
   const loadStats = async () => {
     try {
-      const data = await adminRequest("/api/admin/deleted/stats");
+      const data = await request("/api/admin/deleted/stats");
       if (data.code === 200) {
         setStats(data.data);
       }
@@ -94,16 +83,19 @@ export default function RecycleBin() {
     try {
       const [clients, products, projects, contracts, payments] =
         await Promise.all([
-          adminRequest("/api/admin/clients/deleted"),
-          adminRequest("/api/admin/products/deleted"),
-          adminRequest("/api/admin/projects/deleted"),
-          adminRequest("/api/admin/contracts/deleted"),
-          adminRequest("/api/admin/payments/deleted"),
+          request("/api/admin/clients/deleted"),
+          request("/api/admin/products/deleted"),
+          request("/api/admin/projects/deleted"),
+          request("/api/admin/contracts/deleted"),
+          request("/api/admin/payments/deleted"),
         ]);
 
       if (clients.code === 200) setDeletedClients(clients.data);
       if (products.code === 200) setDeletedProducts(products.data);
-      if (projects.code === 200) setDeletedProjects(projects.data);
+      if (projects.code === 200) {
+        console.log("Projects data:", projects.data); // 调试输出
+        setDeletedProjects(projects.data);
+      }
       if (contracts.code === 200) setDeletedContracts(contracts.data);
       if (payments.code === 200) setDeletedPayments(payments.data);
     } catch (error) {
@@ -115,8 +107,14 @@ export default function RecycleBin() {
 
   // 恢复数据
   const handleRestore = async (type: string, id: number) => {
+    if (!id || id === undefined) {
+      message.error("数据ID无效，请刷新页面重试");
+      console.error("Invalid ID:", id);
+      return;
+    }
+    
     try {
-      const data = await adminRequest(`/api/admin/${type}/restore/${id}`, {
+      const data = await request(`/api/admin/${type}/restore/${id}`, {
         method: "PUT",
       });
 
@@ -135,8 +133,14 @@ export default function RecycleBin() {
 
   // 永久删除
   const handlePermanentDelete = async (type: string, id: number) => {
+    if (!id || id === undefined) {
+      message.error("数据ID无效，请刷新页面重试");
+      console.error("Invalid ID:", id);
+      return;
+    }
+    
     try {
-      const data = await adminRequest(`/api/admin/${type}/permanent/${id}`, {
+      const data = await request(`/api/admin/${type}/permanent/${id}`, {
         method: "DELETE",
       });
 
@@ -153,12 +157,12 @@ export default function RecycleBin() {
     }
   };
 
-  // 退出登录
+  // 退出管理员模式
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminUsername");
-    message.success("已退出登录");
-    router.push("/");
+    message.success("已退出管理员模式");
+    router.back();
   };
 
   // 客户表格列
@@ -458,17 +462,17 @@ export default function RecycleBin() {
               margin: 0,
             }}
           >
-            数据回收站
+            管理员页面
           </h1>
           <p style={{ color: "#64748B", fontSize: 14, margin: "8px 0 0 0" }}>
             管理员：{localStorage.getItem("adminUsername") || "admin"} |
-            权限：完全控制
+            权限：数据管理
           </p>
         </div>
         <Space>
-          <Button onClick={() => router.push("/")}>返回首页</Button>
+          <Button onClick={() => router.back()}>返回</Button>
           <Button icon={<LogoutOutlined />} onClick={handleLogout} danger>
-            退出登录
+            退出管理
           </Button>
         </Space>
       </div>

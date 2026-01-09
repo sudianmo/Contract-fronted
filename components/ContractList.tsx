@@ -681,6 +681,26 @@ const ContractList: React.FC = () => {
                 </div>
                 <div>
                   <span style={{ color: "#64748B", fontSize: 14 }}>
+                    已付款金额：
+                  </span>
+                  <span
+                    style={{ color: "#34C759", fontSize: 14, fontWeight: 600 }}
+                  >
+                    ¥{(contractDetail.totalPayment || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    待付款金额：
+                  </span>
+                  <span
+                    style={{ color: "#FF9500", fontSize: 14, fontWeight: 600 }}
+                  >
+                    ¥{(contractDetail.contractAmount - (contractDetail.totalPayment || 0)).toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
                     签订日期：
                   </span>
                   <span style={{ color: "#1D1D1F", fontSize: 14 }}>

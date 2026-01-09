@@ -19,17 +19,17 @@ export default function RootLayout({
 
   // 路由守卫：检查登录状态
   useEffect(() => {
-    const whiteList = ["/login", "/admin/login"];
-    if (!whiteList.includes(pathname)) {
-      const user = checkAuth();
-      if (!user) {
-        router.replace("/login");
-      }
+    const whiteList = ["/login"];
+    // 只有在非白名单页面且未登录时才跳转
+    if (!whiteList.includes(pathname) && !checkAuth()) {
+      router.replace("/login");
     }
   }, [pathname, router]);
 
   // 登录页不显示Sidebar
-  const isLoginPage = pathname === "/login" || pathname === "/admin/login";
+  const isLoginPage = pathname === "/login";
+  // 回收站页面也显示Sidebar
+  const showSidebar = !isLoginPage;
 
   return (
     <html lang="zh-CN">

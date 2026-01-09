@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Modal, Input, message } from "antd";
 import {
   HomeOutlined,
   FileTextOutlined,
@@ -15,12 +16,25 @@ import {
   UserOutlined,
   InboxOutlined,
   AlertOutlined,
+  DeleteOutlined,
+  LogoutOutlined,
+  LockOutlined,
+  UnlockOutlined,
 } from "@ant-design/icons";
 
 const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+
+  // 检查管理员解锁状态
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    setIsAdminUnlocked(!!token);
+  }, [pathname]);
 
   // 仪表盘数据
   const [dashboardData, setDashboardData] = useState({
@@ -45,6 +59,42 @@ const Sidebar = () => {
     { key: "/products", label: "产品管理", icon: <ShoppingOutlined /> },
     { key: "/payments", label: "回款管理", icon: <DollarOutlined /> },
   ];
+
+  // 处理回收站点击
+  const handleRecycleClick = () => {
+    setPasswordModalVisible(true);
+    setAdminPassword("");
+  };
+
+  // 验证管理员密码
+  const handlePasswordSubmit = () => {
+    // 管理员密码：12345678
+    if (adminPassword === "12345678") {
+      setPasswordModalVisible(false);
+      setAdminPassword("");
+      // 设置管理员token
+      localStorage.setItem("adminToken", "admin-authenticated");
+      localStorage.setItem("adminUsername", "admin");
+      setIsAdminUnlocked(true); // 更新解锁状态
+      router.push("/admin/recycle");
+    } else {
+      message.error("密码错误，请重试");
+      setAdminPassword("");
+    }
+  };
+
+  // 退出登录
+  const handleLogout = () => {
+    // 清除所有登录信息
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("username");
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUsername");
+    setIsAdminUnlocked(false); // 更新解锁状态
+    message.success("已退出登录");
+    router.push("/login");
+  };
 
   // 模拟数据加载
   useEffect(() => {
@@ -154,6 +204,27 @@ const Sidebar = () => {
               {!collapsed && <span className="label">{item.label}</span>}
             </Link>
           ))}
+
+          {/* 管理员页面入口 */}
+          <div
+            className={`menu-item ${pathname === "/admin/recycle" ? "active" : ""}`}
+            onClick={handleRecycleClick}
+            title={collapsed ? "管理员页面" : ""}
+            style={{
+              cursor: "pointer",
+              borderTop: "1px solid rgba(242, 242, 247, 0.1)",
+              marginTop: 8,
+            }}
+          >
+            <span className="icon">
+              {isAdminUnlocked ? (
+                <UnlockOutlined style={{ color: "#34C759" }} />
+              ) : (
+                <LockOutlined style={{ color: "#FF3B30" }} />
+              )}
+            </span>
+            {!collapsed && <span className="label">管理员页面</span>}
+          </div>
         </div>
 
         {/* 仪表盘插件区域 */}
@@ -371,7 +442,63 @@ const Sidebar = () => {
             <div className="user-name">管理员</div>
           </div>
         )}
+        {/* 退出登录按钮 */}
+        <div
+          className="logout-btn"
+          onClick={handleLogout}
+          title="退出登录"
+          style={{
+            marginLeft: collapsed ? 0 : "auto",
+            cursor: "pointer",
+            padding: "8px",
+            borderRadius: 6,
+            transition: "all 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          <LogoutOutlined
+            style={{
+              fontSize: 18,
+              color: "#FF3B30",
+            }}
+          />
+        </div>
       </div>
+
+      {/* 管理员密码验证模态框 */}
+      <Modal
+        title="管理员验证"
+        open={passwordModalVisible}
+        onOk={handlePasswordSubmit}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          setAdminPassword("");
+        }}
+        okText="确认"
+        cancelText="取消"
+        centered
+      >
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ color: "#64748B", marginBottom: 12 }}>
+            访问管理员页面需要管理员权限，请输入管理员密码：
+          </p>
+          <Input.Password
+            placeholder="请输入管理员密码"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            onPressEnter={handlePasswordSubmit}
+            autoFocus
+          />
+        </div>
+      </Modal>
     </div>
   );
 };

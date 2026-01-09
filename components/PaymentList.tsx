@@ -224,25 +224,32 @@ const PaymentList: React.FC = () => {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+      console.log("Form values:", values); // 调试输出
+      
       const data = {
         ...values,
         paymentDate: values.paymentDate
           ? dayjs(values.paymentDate).format("YYYY-MM-DD")
           : null,
       };
+      
+      console.log("Submitting data:", data); // 调试输出
 
       if (editingPayment) {
         await updatePayment(editingPayment.id!, data);
         message.success("更新成功");
       } else {
-        await createPayment(data);
+        const result = await createPayment(data);
+        console.log("Create result:", result); // 调试输出
         message.success("创建成功");
       }
 
       setModalVisible(false);
       loadPayments();
-    } catch (error) {
-      message.error("保存失败");
+    } catch (error: any) {
+      console.error("保存错误:", error); // 调试输出
+      const errorMsg = error?.response?.data?.message || error?.message || "保存失败";
+      message.error(errorMsg);
     }
   };
 

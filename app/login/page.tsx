@@ -23,6 +23,7 @@ const LoginPage: React.FC = () => {
     try {
       const user = await login({ username, password });
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("username", username); // 保存用户名
       message.success("登录成功");
       router.push("/");
     } catch (error: any) {
@@ -206,34 +207,6 @@ const LoginPage: React.FC = () => {
             {loading ? "登录中..." : "登录"}
           </button>
         </form>
-
-        {/* 管理员入口 */}
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: 24,
-            fontSize: 13,
-            color: "rgba(255, 255, 255, 0.6)",
-          }}
-        >
-          <span
-            onClick={() => router.push("/admin/login")}
-            style={{
-              color: "#6C2BD9",
-              cursor: "pointer",
-              textDecoration: "underline",
-              transition: "color 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLSpanElement).style.color = "#8B4FE0";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLSpanElement).style.color = "#6C2BD9";
-            }}
-          >
-            管理员登录
-          </span>
-        </div>
       </div>
 
       <style jsx global>{`

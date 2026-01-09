@@ -22,6 +22,7 @@ import type { DepartmentPerformance, ProductSalesStats } from "@/types";
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState("");
   const [deptStats, setDeptStats] = useState<DepartmentPerformance[]>([]);
   const [productStats, setProductStats] = useState<ProductSalesStats[]>([]);
   const [animatedValues, setAnimatedValues] = useState({
@@ -30,6 +31,12 @@ export default function Home() {
     clients: 0,
     projects: 0,
   });
+
+  // 获取用户名
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username") || "用户";
+    setUsername(storedUsername);
+  }, []);
 
   // 加载统计数据
   useEffect(() => {
@@ -144,7 +151,7 @@ export default function Home() {
             letterSpacing: 1,
           }}
         >
-          Welcome
+          Welcome, {username}
         </h1>
         <div
           style={{
