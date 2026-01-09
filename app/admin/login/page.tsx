@@ -17,30 +17,22 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      const data = await response.json();
-
-      if (data.code === 200) {
-        // 保存Token到localStorage
-        localStorage.setItem("adminToken", data.data.token);
-        localStorage.setItem("adminUsername", data.data.username);
-
-        message.success("登录成功！");
-
-        // 跳转到管理员回收站页面
-        setTimeout(() => {
-          router.push("/admin/recycle");
-        }, 500);
-      } else {
-        message.error(data.message || "登录失败");
+      if (values.username !== "admin") {
+        message.error("用户名不存在");
+        return;
       }
+
+      if (values.password !== "admin123") {
+        message.error("密码错误");
+        return;
+      }
+
+      localStorage.setItem("adminUsername", "admin");
+      message.success("登录成功！");
+
+      setTimeout(() => {
+        router.push("/admin/recycle");
+      }, 500);
     } catch (error) {
       console.error("Login error:", error);
       message.error("网络错误，请稍后重试");

@@ -54,8 +54,8 @@ export default function RecycleBin() {
 
   // 检查管理员权限
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
+    const username = localStorage.getItem("adminUsername");
+    if (!username) {
       message.warning("请通过侧边栏的管理员页面入口访问");
       // 返回上一页，而不是首页
       router.back();
@@ -112,7 +112,7 @@ export default function RecycleBin() {
       console.error("Invalid ID:", id);
       return;
     }
-    
+
     try {
       const data = await request(`/api/admin/${type}/restore/${id}`, {
         method: "PUT",
@@ -138,7 +138,7 @@ export default function RecycleBin() {
       console.error("Invalid ID:", id);
       return;
     }
-    
+
     try {
       const data = await request(`/api/admin/${type}/permanent/${id}`, {
         method: "DELETE",
@@ -159,7 +159,6 @@ export default function RecycleBin() {
 
   // 退出管理员模式
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
     localStorage.removeItem("adminUsername");
     message.success("已退出管理员模式");
     router.back();
